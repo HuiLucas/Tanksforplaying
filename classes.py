@@ -18,6 +18,8 @@ class TankBody:
         self.angvel = 0
         self.size = size
         self.agility = agility
+        self.cooldown_timer = 0
+        self.color = color
 
         self.surface = pg.Surface(size)
         self.surface.set_colorkey((0, 0, 0))
@@ -31,6 +33,12 @@ class TankBody:
         self.angvel += self.agility * movement * agility_multiplier
         self.angle += self.angvel
 
+        #to prevent tanks from hiding on the other side of the planet
+        if self.angle < -1.84:
+            self.angle = -1.29
+        if self.angle > -1.29:
+            self.angle = -1.84
+
         # dampen the motion
         self.angvel /= movement_dampening
 
@@ -38,11 +46,29 @@ class TankBody:
         if self.angvel**2 < 1e-10:
             self.angvel = 0
 
-    def get_surf(self, planet_pos, planet_radius):
+        # Before shooting, you need to load the shells
+        if not movement == 0:
+            self.cooldown_timer = 1
+
+    def get_surf(self, planet_pos, planet_radius, timestep):
         self.x = (planet_radius + self.size[1]/4) * np.cos(self.angle) + planet_pos[0]
         self.y = (planet_radius + self.size[1]/4) * np.sin(self.angle) + planet_pos[1]
+
+        # the loading timer goes down
+        if self.cooldown_timer > 0:
+            self.cooldown_timer -= timestep
+            self.surface.fill((100, 0, 0))
+
+        # change color if cooldown is over
+        if self.cooldown_timer <= 0:
+            self.surface.fill(self.color)
+            self.cooldown_timer = 0
+
 
         rotated_surface = pg.transform.rotate(self.surface, -np.degrees(self.angle))
         rotated_rect = rotated_surface.get_rect(center=(self.x, self.y))
 
         return rotated_surface, rotated_rect
+
+    #def shoot(self):
+        #only if cooldown_time <= 0

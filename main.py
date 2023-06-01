@@ -25,6 +25,7 @@ dt = 0.01
 pg.init()
 pg.display.set_caption("Tanks for Playing!")
 clock = pg.time.Clock()
+clock.tick(1/dt)
 screen = pg.display.set_mode((display_width, display_height))
 pg.display.set_icon(pg.image.load("Glyphish-Glyphish-23-bird.32.png"))
 
@@ -33,6 +34,7 @@ pg.font.init()
 font1 = pg.font.SysFont("Comic Sans MS", 45)
 
 tank = custom.TankBody(-np.pi / 2, (20, 30), 4, RED)
+AI_tank = custom.TankBody(-np.pi/2 + 0.2, (20, 30), 4, LIGHT_BLUE)
 planet = custom.Planet((display_width / 2, display_height * 4.0), display_height * 3.25, BLUE)
 
 running = True
@@ -65,8 +67,11 @@ while running:
     pg.draw.circle(screen, planet.color, planet.pos, planet.radius)
 
     # displaying the tank. this needs quite a bit of stuff, so it has to be like this, afaik.
-    tank_surface_results = tank.get_surf(planet.pos, planet.radius)
+    tank_surface_results = tank.get_surf(planet.pos, planet.radius, dt)
     screen.blit(tank_surface_results[0], tank_surface_results[1])
+
+    tank_surface_results_AI = AI_tank.get_surf(planet.pos, planet.radius, dt)
+    screen.blit(tank_surface_results_AI[0], tank_surface_results_AI[1])
 
     pg.display.flip()
     clock.tick(framerate)
