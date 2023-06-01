@@ -1,14 +1,13 @@
 # only allowed to use: pygame, matplotlib, numpy, scipy
 import pygame as pg
 import numpy as np
-import pygame.mouse
 
 import classes as custom
 
 # set up constants
 display_height = 700
 display_width = 1200
-cool_off_time = 500 # minimum time between shots (in ms)
+cool_off_time = 500  # minimum time between shots (in ms)
 bullet_speed = 1200
 
 planet_radius = 4  # these values don't actually mean anything, just fiddle with them until they're okay
@@ -39,13 +38,14 @@ pg.font.init()
 font1 = pg.font.SysFont("Comic Sans MS", 45)
 
 # create the planet
-planet = custom.Planet((display_width / 2, display_height * planet_radius), display_height * (planet_radius - terrain_height), BLUE)
+planet = custom.Planet((display_width / 2, display_height * planet_radius),
+                       display_height * (planet_radius - terrain_height), BLUE)
 
 # set up movement boundaries for the tank
 if display_width < planet.radius * 2:
-    boundary_angle = np.arcsin((display_width)/(2 * planet.radius))
+    boundary_angle = np.arcsin(display_width / (2 * planet.radius))
 else:
-    boundary_angle = -10 # -10 is an impossible value, so it's recognizable
+    boundary_angle = -10  # -10 is an impossible value, so it's recognizable
 
 # create the tank
 tank = custom.TankBody(-np.pi / 2, (20, 30), 8, RED, boundary_angle)
@@ -112,7 +112,8 @@ while running:
     # deal with bullets
     for bullet in bullets:
         # delete bullets if too far out
-        if bullet.pos[0] > display_width * 2 or bullet.pos[0] < - display_width or bullet.pos[1] > display_height * 2 or bullet.pos[1] < - display_height:
+        if bullet.pos[0] > display_width * 2 or bullet.pos[0] < - display_width or bullet.pos[1] > display_height * 2 or \
+                bullet.pos[1] < - display_height:
             del bullet
         else:
             # update and display
