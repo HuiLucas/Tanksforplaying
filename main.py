@@ -1,4 +1,5 @@
 import pygame
+simulation_speed =  1000
 
 pygame.init()
 clock = pygame.time.Clock()
@@ -6,7 +7,7 @@ screen = pygame.display.set_mode((100, 100))
 
 running = True
 
-while running = True:
+while running == True:
     pygame.event.pump()
 
     for event in pygame.event.get():
