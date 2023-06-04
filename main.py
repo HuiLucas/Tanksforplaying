@@ -18,6 +18,7 @@ WHITE = (255, 255, 255)
 GRAY = (50, 50, 50)
 BLUE = (0, 0, 255)
 GREEN = (0, 255, 0)
+MARS_RED = (160, 50, 50)
 RED = (255, 0, 0)
 LIGHT_BLUE = (100, 100, 255)
 LIGHT_RED = (255, 100, 100)
@@ -36,10 +37,23 @@ pg.display.set_icon(pg.image.load("Glyphish-Glyphish-23-bird.32.png"))
 # font (for writing, obvs)
 pg.font.init()
 font1 = pg.font.SysFont("Comic Sans MS", 45)
+font2 = pg.font.SysFont("Comic Sans MS", 20)
+
+# load background image
+background = pg.image.load('Artwork/download2.png')
+background.convert()
+background = pg.transform.scale_by(background,0.55)
+background_rect = background.get_rect()
+#background_rect = background_rect.scale_by(2.5, 1.5)
+background_rect.center = display_width//2, display_height//2
+
+
+
+
 
 # create the planet
 planet = custom.Planet((display_width / 2, display_height * planet_radius),
-                       display_height * (planet_radius - terrain_height), BLUE)
+                       display_height * (planet_radius - terrain_height), MARS_RED)
 
 # set up movement boundaries for the tank
 if display_width < planet.radius * 2:
@@ -47,8 +61,9 @@ if display_width < planet.radius * 2:
 else:
     boundary_angle = -10  # -10 is an impossible value, so it's recognizable
 
-# create the tank
-tank = custom.TankBody(-np.pi / 2, (20, 30), 8, RED, boundary_angle)
+# create the tanks
+tank = custom.TankBody(-np.pi / 2, (20, 30), 8, RED, boundary_angle, False)
+AI_tank = custom.TankBody(-np.pi/2 + 0.1, (20, 30), 8, WHITE, boundary_angle, True)
 
 # create the crosshair
 crosshair = custom.Crosshairs((0, 0), (50, 50))
@@ -68,6 +83,8 @@ while running:
         if event.type == pg.QUIT:
             running = False
 
+
+
         # shoot the bullet
         if pg.mouse.get_pressed()[0]:
             if pg.time.get_ticks() - cooloff_timer > cool_off_time:
@@ -82,6 +99,7 @@ while running:
                 bullets.append(custom.Bullet((tank.x, tank.y), (15, 5), direction * bullet_speed + tank.vel, GREEN))
 
     screen.fill(BLACK)
+    screen.blit(background, background_rect)
 
     # press escape to close the game
     keys = pg.key.get_pressed()
@@ -99,15 +117,22 @@ while running:
     else:
         tank.move(0)
 
+    #move AI Tank
+    AI_tank.AI_move()
+
+
     # text with misc content for debugging
     screen.blit(font1.render(str(pg.time.get_ticks()), False, WHITE), (200, 200))
+    screen.blit(font2.render("Artwork by Stable Diffusion and DALL-E", False, MARS_RED), (0, 0))
 
     # display the planet
-    pg.draw.circle(screen, planet.color, planet.pos, planet.radius)
+    pg.draw.circle(screen, (255, 230, 230), planet.pos, planet.radius)
+    pg.draw.circle(screen, (180, 130, 130), planet.pos, planet.radius - 7)
+    pg.draw.circle(screen, planet.color, planet.pos, planet.radius - 18)
 
-    # displaying the tank. this needs quite a bit of stuff, so it has to be like this, afaik.
-    tank_surface_results = tank.get_surf(planet.pos, planet.radius)
-    screen.blit(tank_surface_results[0], tank_surface_results[1])
+    # displaying the tanks. this needs quite a bit of stuff, so it has to be like this, afaik.
+    tank.display(planet, screen)
+    AI_tank.display(planet, screen)
 
     # deal with bullets
     for bullet in bullets:
