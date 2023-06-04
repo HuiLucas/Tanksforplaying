@@ -43,7 +43,6 @@ class TankBody:
         self.surface = pg.Surface((60,40), pg.SRCALPHA, 32)
         #self.surface.set_colorkey((0, 0, 0))  # do NOT remove this line. IDK what it does exactly, but it all turns
         # funny if you delete it. # Sorry but I commented it, I made the background transparent instead
-        #self.surface.fill(color)
         if self.color == (255, 0, 0):
             tankimage = pg.image.load('Artwork/tankred.png')
         elif self.color == (255, 255, 255):
@@ -54,7 +53,7 @@ class TankBody:
         tankimage = pg.transform.scale_by(tankimage, 0.3)
         tankimage = pg.transform.rotate(tankimage, -90)
         self.surface.blit(tankimage, (35, -3))
-        # you can add an image here of the tank body, just blit an pg.image.load over the surface
+
 
         # putting these here for other objects to interact with TankBody
         self.x = 0
@@ -64,9 +63,12 @@ class TankBody:
         # AI variables/preferences
         self.wantstoshootnow = False
 
-    def display(self, planet1, scr):
+    def display(self, planet1, scr): #function to display tank
+        # get direction of cannon barrel
         barrel_direction = pg.mouse.get_pos() - pg.math.Vector2(self.x, self.y)
         self.barrel_angle = np.arctan2(barrel_direction[1], barrel_direction[0]) * 180 /np.pi
+
+        # create cannon barrel
         cannon = pg.Surface((4, 23), pg.SRCALPHA)
         cannon.fill((0, 0, 0))
         cannon = pg.transform.rotate(cannon, -self.barrel_angle - 90)
@@ -75,10 +77,14 @@ class TankBody:
             cannon_rect.bottomleft = (25, 25)
         else:
             cannon_rect.bottomright = (25, 25)
+
+        # put everything on its place in a mini surface
         tank_surface_results = self.get_surf(planet1.pos, planet1.radius)
         newtanksurface = pg.Surface((60, 50), pg.SRCALPHA)
         newtanksurface.blit(tank_surface_results[0], (10, 20))
         newtanksurface.blit(cannon, cannon_rect)
+
+        # put the mini surface on the screen
         scr.blit(newtanksurface, tank_surface_results[1].center)
 
     def move(self, movement=0):
@@ -102,10 +108,10 @@ class TankBody:
         # insert AI code here
         if self.AI == True:
             if self.wantstoshootnow == True:
-                #shoot
+                # shoot
                 print("pew!")
             else:
-                #move in the best direction
+                # move in the best direction
                 self.move(0)
 
     def get_surf(self, planet_pos, planet_radius):

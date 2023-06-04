@@ -1,4 +1,6 @@
 # only allowed to use: pygame, matplotlib, numpy, scipy
+import random
+
 import pygame as pg
 import numpy as np
 
@@ -40,9 +42,19 @@ font1 = pg.font.SysFont("Comic Sans MS", 45)
 font2 = pg.font.SysFont("Comic Sans MS", 20)
 
 # load background image
-background = pg.image.load('Artwork/download2.png')
-background.convert()
-background = pg.transform.scale_by(background,0.55)
+bg_number = random.randint(0, 10) % 3
+if bg_number == 0:
+    background = pg.image.load('Artwork/download2.png')
+    background.convert()
+    background = pg.transform.scale_by(background,0.55)
+elif bg_number == 1:
+    background = pg.image.load("Artwork/download6.png")
+    background.convert()
+    background = pg.transform.scale_by(background, 0.75)
+else:
+    background = pg.image.load('Artwork/download5.png')
+    background.convert()
+    background = pg.transform.scale_by(background, 0.7)
 background_rect = background.get_rect()
 #background_rect = background_rect.scale_by(2.5, 1.5)
 background_rect.center = display_width//2, display_height//2
@@ -126,6 +138,12 @@ while running:
     screen.blit(font2.render("Artwork by Stable Diffusion and DALL-E", False, MARS_RED), (0, 0))
 
     # display the planet
+    background_planet = pg.Surface((display_width, display_height), pg.SRCALPHA)
+    pg.draw.circle(background_planet, (150, 100, 100, 30), planet.pos, planet.radius + 60)
+    pg.draw.circle(background_planet, (150, 100, 100, 50), planet.pos, planet.radius + 45)
+    pg.draw.circle(background_planet, (125, 75, 75, 100), planet.pos, planet.radius + 20)
+    pg.draw.circle(background_planet, (100, 50, 50, 150), planet.pos, planet.radius + 8)
+    screen.blit(background_planet, (0, 0))
     pg.draw.circle(screen, (255, 230, 230), planet.pos, planet.radius)
     pg.draw.circle(screen, (180, 130, 130), planet.pos, planet.radius - 7)
     pg.draw.circle(screen, planet.color, planet.pos, planet.radius - 18)
