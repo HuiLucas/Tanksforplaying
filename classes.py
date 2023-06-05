@@ -112,12 +112,22 @@ class TankBody:
         elif self.angle < self.lower_angle_boundary:
             self.angle = self.lower_angle_boundary
 
-    def AI_move(self):
+    def AI_move(self, Bulletlist, other_tank):
         # insert AI code here
         if self.AI == True:
             if self.wantstoshootnow == True:
-                # shoot
-                print("pew!")
+                if pg.time.get_ticks() - self.cooloff_timer > self.cool_off_time:
+                    self.cooloff_timer = pg.time.get_ticks()
+                    goal = pg.math.Vector2(other_tank.x, other_tank.y) - pg.math.Vector2(self.x, self.y)
+                    if goal[0] < 0:
+                        direction = pg.math.Vector2(-300, -300)
+                    else:
+                        direction = pg.math.Vector2(300, -300)
+                    bullet_speed = 13.4 * np.sqrt(-9.81 * (goal[0])**2 / (goal[1] - goal[0] * np.sign(goal[0]))) - goal[1] * 1.2 - 3000 * 1/goal[0]
+                    direction = direction.normalize()
+                    Bulletlist.append(Bullet((self.x, self.y), (15, 5), direction * bullet_speed + self.vel, (0, 255, 0), pg.time.get_ticks()))
+                    Bulletlist[-1].Tank = other_tank
+                    print("pew!")
             else:
                 # move in the best direction
                 self.move(0)
@@ -161,6 +171,7 @@ class Bullet:
         self.firetime = firetime
         self.armed = False
         self.underground = False
+        self.Tank = None
 
         self.surface = pg.Surface(size)
         self.surface.set_colorkey((50, 50, 50))
@@ -185,7 +196,7 @@ class Bullet:
 
     def collision(self, planet2, other_tank):
         if self.armed == True:
-            if np.linalg.norm(pg.math.Vector2((other_tank.x, other_tank.y) - self.pos)) <= 10:
+            if np.linalg.norm(pg.math.Vector2((other_tank.x, other_tank.y) - self.pos)) <= 15:
                 self.boom()
                 other_tank.ishit = True
                 self.underground = True

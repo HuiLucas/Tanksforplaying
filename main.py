@@ -82,7 +82,8 @@ AI_tank.cool_off_time = cool_off_time
 crosshair = custom.Crosshairs((0, 0), (50, 50))
 
 # list containing all the bullets, because we're going to have quite a lot of them
-bullets = [custom.Bullet((100, 100), (40, 10), (1, 1), GREEN, 0)]
+bullets = []
+
 
 # start the cool-off timer
 tank.cooloff_timer = pg.time.get_ticks()
@@ -112,6 +113,7 @@ while running:
 
                 # create a bullet with init velocity and direction
                 bullets.append(custom.Bullet((tank.x, tank.y), (15, 5), direction * bullet_speed + tank.vel, GREEN, pg.time.get_ticks()))
+                bullets[-1].Tank = AI_tank
 
     screen.fill(BLACK)
     screen.blit(background, background_rect)
@@ -135,7 +137,8 @@ while running:
         tank.move(0)
 
     #move AI Tank
-    AI_tank.AI_move()
+    AI_tank.wantstoshootnow = True
+    AI_tank.AI_move(bullets, tank)
 
 
     # text with misc content for debugging
@@ -180,7 +183,7 @@ while running:
             bullet.attraction(planet.pos)
             bullet.move()
             screen.blit(bullet.rotated_surface, bullet.rotated_rect)
-            bullet.collision(planet, AI_tank)
+            bullet.collision(planet, bullet.Tank)
 
     # display the crosshair
     crosshair.pos = pg.mouse.get_pos()
