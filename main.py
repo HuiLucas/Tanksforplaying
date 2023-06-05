@@ -1,5 +1,6 @@
 # only allowed to use: pygame, matplotlib, numpy, scipy
 import random
+import numba
 
 import pygame as pg
 import numpy as np
@@ -33,8 +34,9 @@ framerate = 60
 pg.init()
 pg.display.set_caption("Tanks for Playing!")
 clock = pg.time.Clock()
-screen = pg.display.set_mode((display_width, display_height))
+screen = pg.display.set_mode((display_width, display_height), pg.DOUBLEBUF)
 pg.display.set_icon(pg.image.load("Glyphish-Glyphish-23-bird.32.png"))
+
 
 # font (for writing, obvs)
 pg.font.init()
@@ -87,7 +89,7 @@ bullets = []
 
 # start the cool-off timer
 tank.cooloff_timer = pg.time.get_ticks()
-AI_tank.cooloff_timer = pg.time.get_ticks()
+AI_tank.cooloff_timer = pg.time.get_ticks() + 2000
 
 running = True
 

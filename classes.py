@@ -1,5 +1,6 @@
 import pygame as pg
 import numpy as np
+import numba
 
 # constants for the classes
 agility_multiplier = 1e-1
