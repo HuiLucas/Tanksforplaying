@@ -149,12 +149,15 @@ class Crosshairs:
 
 # the Bullet class has to deal with gravity and collisions (to be added)
 class Bullet:
-    def __init__(self, pos, size, vel, color):
+    def __init__(self, pos, size, vel, color, firetime):
         self.pos = pg.math.Vector2(pos)
         self.size = size
         self.vel = pg.math.Vector2(vel)
         self.angle = np.arctan2(self.vel[1], self.vel[0])
         self.acceleration = pg.math.Vector2([0, 0])
+        self.firetime = firetime
+        self.armed = False
+        self.underground = False
 
         self.surface = pg.Surface(size)
         self.surface.set_colorkey((50, 50, 50))
@@ -176,3 +179,9 @@ class Bullet:
         rel_dist = pg.math.Vector2(planet_pos - self.pos)
         self.acceleration = gravity * rel_dist / rel_dist.magnitude() ** 3
         self.vel += self.acceleration * dt
+
+    def collision(self, planet2):
+        if self.armed == True:
+            if np.linalg.norm(pg.math.Vector2(planet2.pos - self.pos)) <= planet2.radius:
+                self.underground = True
+                self.surface.set_alpha(0)
