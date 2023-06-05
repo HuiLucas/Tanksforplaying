@@ -28,6 +28,7 @@ class TankBody:
         self.AI = AI
         self.barrel_angle = 0
         self.color = color
+        self.invisible_mode = False
 
         # to make sure the tank doesn't leave the screen
         self.boundary_angle = boundary_angle
@@ -85,6 +86,8 @@ class TankBody:
         newtanksurface.blit(cannon, cannon_rect)
 
         # put the mini surface on the screen
+        if self.invisible_mode == True:
+            newtanksurface.set_alpha(50)
         scr.blit(newtanksurface, tank_surface_results[1].center)
 
     def move(self, movement=0):
@@ -123,7 +126,6 @@ class TankBody:
 
         # rotate the tank along with the surface it's on
         rotated_surface = pg.transform.rotate(self.surface, -np.degrees(self.angle))
-        #rotate_surface = pg.transform.
         rotated_rect = rotated_surface.get_rect(center=(self.x - 25, self.y - 38))
         rotated_rect = rotated_rect.scale_by(2)
 

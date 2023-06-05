@@ -149,6 +149,7 @@ while running:
     pg.draw.circle(screen, planet.color, planet.pos, planet.radius - 18)
 
     # displaying the tanks. this needs quite a bit of stuff, so it has to be like this, afaik.
+    #AI_tank.invisible_mode = True
     tank.display(planet, screen)
     AI_tank.display(planet, screen)
 
