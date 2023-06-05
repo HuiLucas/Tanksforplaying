@@ -41,26 +41,13 @@ pg.font.init()
 font1 = pg.font.SysFont("Comic Sans MS", 45)
 font2 = pg.font.SysFont("Comic Sans MS", 20)
 
-# load background image
-bg_number = random.randint(0, 10) % 3
-if bg_number == 0:
-    background = pg.image.load('Artwork/download2.png')
-    background.convert()
-    background = pg.transform.scale_by(background,0.55)
-elif bg_number == 1:
-    background = pg.image.load("Artwork/download6.png")
-    background.convert()
-    background = pg.transform.scale_by(background, 0.75)
-else:
-    background = pg.image.load('Artwork/download5.png')
-    background.convert()
-    background = pg.transform.scale_by(background, 0.7)
+# load background image and convert into proper size
+background = pg.image.load('Artwork/Stars-HD-Desktop-Wallpaper-44242.jpg')
+background.convert()
+background = pg.transform.scale_by(background, 0.55)
+# background rect
 background_rect = background.get_rect()
-background_rect.center = display_width//2, display_height//2
-
-
-
-
+background_rect.center = display_width // 2, display_height // 2
 
 # create the planet
 planet = custom.Planet((display_width / 2, display_height * planet_radius),
@@ -73,9 +60,11 @@ else:
     boundary_angle = -10  # -10 is an impossible value, so it's recognizable
 
 # create the tanks
-tank = custom.TankBody(-np.pi / 2, (20, 30), 8, RED, boundary_angle, False)
+tank = custom.Tank(-np.pi / 2, (20, 30), 8, RED, boundary_angle, False)
 tank.cool_off_time = cool_off_time
-AI_tank = custom.TankBody(-np.pi/2 + 0.1, (20, 30), 8, WHITE, boundary_angle, True)
+
+# AI tank
+AI_tank = custom.Tank(-np.pi / 2 + 0.1, (20, 30), 8, WHITE, boundary_angle, True)
 AI_tank.cool_off_time = cool_off_time
 
 # create the crosshair
@@ -83,7 +72,6 @@ crosshair = custom.Crosshairs((0, 0), (50, 50))
 
 # list containing all the bullets, because we're going to have quite a lot of them
 bullets = []
-
 
 # start the cool-off timer
 tank.cooloff_timer = pg.time.get_ticks()
@@ -98,8 +86,6 @@ while running:
         if event.type == pg.QUIT:
             running = False
 
-
-
         # shoot the bullet
         if pg.mouse.get_pressed()[0]:
             if pg.time.get_ticks() - tank.cooloff_timer > tank.cool_off_time:
@@ -112,7 +98,8 @@ while running:
                 direction = direction.normalize()
 
                 # create a bullet with init velocity and direction
-                bullets.append(custom.Bullet((tank.x, tank.y), (15, 5), direction * bullet_speed + tank.vel, GREEN, pg.time.get_ticks()))
+                bullets.append(custom.Bullet((tank.x, tank.y), (15, 5), direction * bullet_speed + tank.vel, GREEN,
+                                             pg.time.get_ticks()))
                 bullets[-1].Tank = AI_tank
 
     screen.fill(BLACK)
@@ -136,17 +123,16 @@ while running:
     else:
         tank.move(0)
 
-    #move AI Tank
+    # move AI Tank
     AI_tank.wantstoshootnow = True
     AI_tank.AI_move(bullets, tank)
-
 
     # text with misc content for debugging
     screen.blit(font1.render(str(pg.time.get_ticks()), False, WHITE), (200, 200))
     if pg.time.get_ticks() - tank.cooloff_timer >= tank.cool_off_time:
         screen.blit(font1.render(str(pg.time.get_ticks() - tank.cooloff_timer), False, GREEN), (200, 250))
     else:
-        screen.blit(font1.render(str(pg.time.get_ticks() - tank.cooloff_timer),False, RED), (200, 250))
+        screen.blit(font1.render(str(pg.time.get_ticks() - tank.cooloff_timer), False, RED), (200, 250))
     screen.blit(font2.render("Artwork by Stable Diffusion and DALL-E", False, MARS_RED), (0, 0))
 
     # display the planet
@@ -161,7 +147,7 @@ while running:
     pg.draw.circle(screen, planet.color, planet.pos, planet.radius - 18)
 
     # displaying the tanks. this needs quite a bit of stuff, so it has to be like this, afaik.
-    #AI_tank.invisible_mode = True
+    # AI_tank.invisible_mode = True
     tank.display(planet, screen)
     AI_tank.display(planet, screen)
 
@@ -193,3 +179,10 @@ while running:
     clock.tick(framerate)
 
 pg.quit()
+
+
+# to do
+# main menu
+# health bars
+# ammo?
+# bullet variability

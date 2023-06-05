@@ -19,7 +19,7 @@ class Planet:
 
 # tank class. lots of stuff in here. should probably be renamed to Tank,
 # since I'm planning on including the tank gun in this class as well.
-class TankBody:
+class Tank:
     def __init__(self, angle, size, agility, color, boundary_angle, AI):
         self.angle = angle
         self.angvel = 0
@@ -59,7 +59,7 @@ class TankBody:
         self.surface.blit(tankimage, (35, -3))
 
 
-        # putting these here for other objects to interact with TankBody
+        # putting these here for other objects to interact with Tank
         self.x = 0
         self.y = 0
         self.vel = pg.math.Vector2([0, 0])
@@ -127,7 +127,6 @@ class TankBody:
                     direction = direction.normalize()
                     Bulletlist.append(Bullet((self.x, self.y), (15, 5), direction * bullet_speed + self.vel, (0, 255, 0), pg.time.get_ticks()))
                     Bulletlist[-1].Tank = other_tank
-                    print("pew!")
             else:
                 # move in the best direction
                 self.move(0)
@@ -142,7 +141,7 @@ class TankBody:
         # rotate the tank along with the surface it's on
         rotated_surface = pg.transform.rotate(self.surface, -np.degrees(self.angle))
         rotated_rect = rotated_surface.get_rect(center=(self.x - 25, self.y - 38))
-        rotated_rect = rotated_rect.scale_by(2)
+        rotated_rect = rotated_rect.scale_by(2, 2)
 
         return rotated_surface, rotated_rect
 
@@ -196,14 +195,15 @@ class Bullet:
 
     def collision(self, planet2, other_tank):
         if self.armed == True:
-            if np.linalg.norm(pg.math.Vector2((other_tank.x, other_tank.y) - self.pos)) <= 15:
+            # use pwn methods
+            if pg.math.Vector2((other_tank.x, other_tank.y) - self.pos).length() <= 15:
                 self.boom()
                 other_tank.ishit = True
                 self.underground = True
-            if np.linalg.norm(pg.math.Vector2(planet2.pos - self.pos)) <= planet2.radius + 40:
+            if pg.math.Vector2(planet2.pos - self.pos).length() <= planet2.radius + 40:
                 self.boom()
                 self.underground = True
-            if np.linalg.norm(pg.math.Vector2(planet2.pos - self.pos)) <= planet2.radius:
+            if pg.math.Vector2(planet2.pos - self.pos).length() <= planet2.radius:
                 self.surface.set_alpha(0)
 
     def boom(self):
