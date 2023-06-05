@@ -29,6 +29,8 @@ class TankBody:
         self.barrel_angle = 0
         self.color = color
         self.invisible_mode = False
+        self.cool_off_time = 0
+        self.cooloff_timer = 0
 
         # to make sure the tank doesn't leave the screen
         self.boundary_angle = boundary_angle

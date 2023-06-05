@@ -56,7 +56,6 @@ else:
     background.convert()
     background = pg.transform.scale_by(background, 0.7)
 background_rect = background.get_rect()
-#background_rect = background_rect.scale_by(2.5, 1.5)
 background_rect.center = display_width//2, display_height//2
 
 
@@ -75,7 +74,9 @@ else:
 
 # create the tanks
 tank = custom.TankBody(-np.pi / 2, (20, 30), 8, RED, boundary_angle, False)
+tank.cool_off_time = cool_off_time
 AI_tank = custom.TankBody(-np.pi/2 + 0.1, (20, 30), 8, WHITE, boundary_angle, True)
+AI_tank.cool_off_time = cool_off_time
 
 # create the crosshair
 crosshair = custom.Crosshairs((0, 0), (50, 50))
@@ -84,7 +85,8 @@ crosshair = custom.Crosshairs((0, 0), (50, 50))
 bullets = [custom.Bullet((100, 100), (40, 10), (1, 1), GREEN)]
 
 # start the cool-off timer
-cooloff_timer = pg.time.get_ticks()
+tank.cooloff_timer = pg.time.get_ticks()
+AI_tank.cooloff_timer = pg.time.get_ticks()
 
 running = True
 
@@ -99,12 +101,13 @@ while running:
 
         # shoot the bullet
         if pg.mouse.get_pressed()[0]:
-            if pg.time.get_ticks() - cooloff_timer > cool_off_time:
+            if pg.time.get_ticks() - tank.cooloff_timer > tank.cool_off_time:
                 # reset the cool off timer
-                cooloff_timer = pg.time.get_ticks()
+                tank.cooloff_timer = pg.time.get_ticks()
 
                 # find direction to shoot
                 direction = pg.mouse.get_pos() - pg.math.Vector2(tank.x, tank.y)
+                bullet_speed = 50 * np.sqrt(np.linalg.norm(direction))
                 direction = direction.normalize()
 
                 # create a bullet with init velocity and direction
