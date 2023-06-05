@@ -180,7 +180,7 @@ while running:
             bullet.attraction(planet.pos)
             bullet.move()
             screen.blit(bullet.rotated_surface, bullet.rotated_rect)
-            bullet.collision(planet)
+            bullet.collision(planet, AI_tank)
 
     # display the crosshair
     crosshair.pos = pg.mouse.get_pos()

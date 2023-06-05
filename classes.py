@@ -31,6 +31,7 @@ class TankBody:
         self.invisible_mode = False
         self.cool_off_time = 0
         self.cooloff_timer = 0
+        self.ishit = False
 
         # to make sure the tank doesn't leave the screen
         self.boundary_angle = boundary_angle
@@ -90,6 +91,8 @@ class TankBody:
         # put the mini surface on the screen
         if self.invisible_mode == True:
             newtanksurface.set_alpha(50)
+        if self.ishit ==True:
+            newtanksurface.set_alpha(0)
         scr.blit(newtanksurface, tank_surface_results[1].center)
 
     def move(self, movement=0):
@@ -180,8 +183,19 @@ class Bullet:
         self.acceleration = gravity * rel_dist / rel_dist.magnitude() ** 3
         self.vel += self.acceleration * dt
 
-    def collision(self, planet2):
+    def collision(self, planet2, other_tank):
         if self.armed == True:
-            if np.linalg.norm(pg.math.Vector2(planet2.pos - self.pos)) <= planet2.radius:
+            if np.linalg.norm(pg.math.Vector2((other_tank.x, other_tank.y) - self.pos)) <= 10:
+                self.boom()
+                other_tank.ishit = True
                 self.underground = True
+            if np.linalg.norm(pg.math.Vector2(planet2.pos - self.pos)) <= planet2.radius + 40:
+                self.boom()
+                self.underground = True
+            if np.linalg.norm(pg.math.Vector2(planet2.pos - self.pos)) <= planet2.radius:
                 self.surface.set_alpha(0)
+
+    def boom(self):
+        self.surface = pg.Surface((50, 50))
+        self.surface.set_colorkey((50, 50, 50))
+        self.surface.fill((255, 0, 0))
