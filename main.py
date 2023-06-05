@@ -9,7 +9,7 @@ import classes as custom
 # set up constants
 display_height = 700
 display_width = 1200
-cool_off_time = 500  # minimum time between shots (in ms)
+cool_off_time = 1000  # minimum time between shots (in ms)
 bullet_speed = 1200
 
 planet_radius = 4  # these values don't actually mean anything, just fiddle with them until they're okay
@@ -126,9 +126,11 @@ while running:
     if keys[pg.K_RIGHT]:
         screen.blit(font1.render("Right arrow key pressed", False, WHITE), (100, 100))
         tank.move(1)
+        tank.cooloff_timer = pg.time.get_ticks()
     elif keys[pg.K_LEFT]:
         screen.blit(font1.render("Left arrow key pressed", False, WHITE), (100, 100))
         tank.move(-1)
+        tank.cooloff_timer = pg.time.get_ticks()
     else:
         tank.move(0)
 
@@ -138,6 +140,10 @@ while running:
 
     # text with misc content for debugging
     screen.blit(font1.render(str(pg.time.get_ticks()), False, WHITE), (200, 200))
+    if pg.time.get_ticks() - tank.cooloff_timer >= tank.cool_off_time:
+        screen.blit(font1.render(str(pg.time.get_ticks() - tank.cooloff_timer), False, GREEN), (200, 250))
+    else:
+        screen.blit(font1.render(str(pg.time.get_ticks() - tank.cooloff_timer),False, RED), (200, 250))
     screen.blit(font2.render("Artwork by Stable Diffusion and DALL-E", False, MARS_RED), (0, 0))
 
     # display the planet
