@@ -1,4 +1,4 @@
-# only allowed to use: pygame, matplotlib, numpy, scipy
+# only allowed to use: pygame, matplotlib, numpy, numba
 import random
 import numba
 
@@ -126,8 +126,8 @@ while running:
         tank.move(0)
 
     # move AI Tank
-    AI_tank.wantstoshootnow = True
-    AI_tank.AI_move(bullets, tank)
+    AI_tank.wantstoshootnow = False
+    AI_tank.AI_move(bullets, tank, planet)
 
     # text with misc content for debugging
     screen.blit(font1.render(str(pg.time.get_ticks()), False, WHITE), (200, 200))

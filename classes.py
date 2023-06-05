@@ -113,9 +113,25 @@ class Tank:
         elif self.angle < self.lower_angle_boundary:
             self.angle = self.lower_angle_boundary
 
-    def AI_move(self, Bulletlist, other_tank):
+    def AI_move(self, Bulletlist, other_tank, planet4):
         # insert AI code here
         if self.AI == True:
+            if len(Bulletlist) >= 1:
+                if Bulletlist[-1].Tank == self:
+                    alpha = np.arctan2(Bulletlist[-1].pos[1], Bulletlist[-1].pos[0])
+                    xpos = np.cos(alpha) * Bulletlist[-1].vel.length() * (Bulletlist[-1].pos[1] - self.y) / Bulletlist[-1].vel[1] + Bulletlist[-1].pos[0]
+                    if (Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y)).length() < 200 and np.abs((Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y))[0]) < 100:
+                        self.wantstoshootnow = False
+                       ## print((Bulletlist[-1].pos + Bulletlist[-1].vel * 0.0005 * (Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y)).length() - pg.math.Vector2(self.x, self.y))[0])
+                        if xpos > 0:
+                            self.move(1)
+                            self.wantstoshootnow = True
+                        else:
+                            self.move(-1)
+                            self.wantstoshootnow = True
+                #if len(Bulletlist) >= 2:
+                    # if Bulletlist[-2].Tank == self:
+
             if self.wantstoshootnow == True:
                 if pg.time.get_ticks() - self.cooloff_timer > self.cool_off_time:
                     self.cooloff_timer = pg.time.get_ticks()
@@ -211,3 +227,4 @@ class Bullet:
         self.surface = pg.Surface((50, 50))
         self.surface.set_colorkey((50, 50, 50))
         self.surface.fill((255, 0, 0))
+
