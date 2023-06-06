@@ -79,8 +79,66 @@ bullets = []
 tank.cooloff_timer = pg.time.get_ticks()
 AI_tank.cooloff_timer = pg.time.get_ticks() + 2000
 
-running = True
 
+menu_running = True # is the menu screen running
+running = True # is the main program itself running
+
+# buttons
+play_button = custom.Button([display_width/2, display_height/4], [300, 100], WHITE, "Play", BLACK, font1)
+controls_button = custom.Button([display_width/2, display_height/4*2], [300, 100], WHITE, "How to play", BLACK, font1)
+exit_button = custom.Button([display_width/2, display_height/4*3], [300, 100], WHITE, "Exit", BLACK, font1)
+
+# main menu
+while menu_running:
+    pg.event.pump()
+
+    for event in pg.event.get():
+        if event.type == pg.QUIT:
+            running = False
+            menu_running = False
+
+    # press escape to quickly quit the game
+    keys = pg.key.get_pressed()
+    if keys[pg.K_ESCAPE]:
+        running = False
+        menu_running = False
+        break
+    screen.fill(BLACK)
+
+    # display buttons
+    # play button
+    pg.draw.rect(screen, play_button.color, play_button.rect)
+    screen.blit(play_button.text_surf, play_button.text_rect)
+    # how to play button
+    pg.draw.rect(screen, controls_button.color, controls_button.rect)
+    screen.blit(controls_button.text_surf, controls_button.text_rect)
+    # exit button
+    pg.draw.rect(screen, exit_button.color, exit_button.rect)
+    screen.blit(exit_button.text_surf, exit_button.text_rect)
+
+    # get mouse click
+    if pg.mouse.get_pressed()[0]:
+        # buttons
+        mouse_pos = pg.mouse.get_pos()
+        print("AAAAAAAAAAA")
+
+        # check if mouse click is in play button
+        if play_button.is_clicked(mouse_pos):
+            menu_running = False
+            running = True
+            break
+
+        # check if mouse click is in exit button
+        if exit_button.is_clicked(mouse_pos):
+            pg.quit()
+            running = False
+            menu_running = False
+            break
+
+    pg.display.flip()
+    clock.tick(framerate)
+
+# main program (the game itself)
 while running:
     pg.event.pump()
 
@@ -158,16 +216,31 @@ while running:
         # delete bullets if too far out
         if bullet.pos[0] > display_width * 2 or bullet.pos[0] < - display_width or bullet.pos[1] > display_height * 2 or \
                 bullet.pos[1] < - display_height:
+            bullets.remove(bullet)
             del bullet
         else:
             # update and display
+            # if the bullet is not completely faded in, it does not shoot
+            # makes sense since you won't get to point-blank
             if pg.time.get_ticks() - bullet.firetime < 200:
                 bullet.armed = False
                 bullet.surface.set_alpha(100)
             else:
+                # lucas i really need some more comments
+                # if the bullet is still flying, alles goed
                 bullet.armed = True
-                if bullet.underground == False:
+                if not bullet.underground:
                     bullet.surface.set_alpha(255)
+                    bullet.delete_timer = pg.time.get_ticks()
+                else:
+                    # stop the bullet
+                    # not [0,0] because weird math not written by me (maurizio)
+                    bullet.vel = pg.math.Vector2(0.01, 0.01)
+
+                    # let the explosion stay around for a bit
+                    if pg.time.get_ticks() - bullet.delete_timer > 100:
+                        del bullet
+                        continue
             bullet.attraction(planet.pos)
             bullet.move()
             screen.blit(bullet.rotated_surface, bullet.rotated_rect)
@@ -185,6 +258,13 @@ pg.quit()
 
 # to do
 # main menu
+# textures
 # health bars
 # ammo?
-# bullet variability
+# bullet imprecision (random errors)
+# multiple ai tanks?
+
+# image for boom does not fit properly
+# make the bullet appear at the end of the barrel
+# fix the ai barrel following the mouse
+# remove the bullet fading at the beginning, it's kinda pointless

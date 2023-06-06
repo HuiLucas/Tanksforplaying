@@ -17,7 +17,6 @@ class Planet:
         self.color = color
 
 
-
 # tank class. lots of stuff in here. should probably be renamed to Tank,
 # since I'm planning on including the tank gun in this class as well.
 class Tank:
@@ -26,7 +25,7 @@ class Tank:
         self.angvel = 0
         self.size = size
         self.agility = agility
-        self.AI = AI
+        self.AI = AI # stores whether the tank is ai
         self.barrel_angle = 0
         self.color = color
         self.invisible_mode = False
@@ -45,8 +44,8 @@ class Tank:
             self.upper_angle_boundary = - np.pi / 2 + boundary_angle
 
         # the surface for the tank to be drawn on
-        self.surface = pg.Surface((60,40), pg.SRCALPHA, 32)
-        #self.surface.set_colorkey((0, 0, 0))  # do NOT remove this line. IDK what it does exactly, but it all turns
+        self.surface = pg.Surface((60, 40), pg.SRCALPHA, 32)
+        # self.surface.set_colorkey((0, 0, 0))  # do NOT remove this line. IDK what it does exactly, but it all turns
         # funny if you delete it. # Sorry but I commented it, I made the background transparent instead
         if self.color == (255, 0, 0):
             tankimage = pg.image.load('Artwork/tankred.png')
@@ -59,7 +58,6 @@ class Tank:
         tankimage = pg.transform.rotate(tankimage, -90)
         self.surface.blit(tankimage, (35, -3))
 
-
         # putting these here for other objects to interact with Tank
         self.x = 0
         self.y = 0
@@ -68,14 +66,17 @@ class Tank:
         # AI variables/preferences
         self.wantstoshootnow = False
 
-    def display(self, planet1, scr): #function to display tank
+    def display(self, planet1, scr):  # function to display tank
         # get direction of cannon barrel
-        barrel_direction = pg.mouse.get_pos() - pg.math.Vector2(self.x, self.y)
-        self.barrel_angle = np.arctan2(barrel_direction[1], barrel_direction[0]) * 180 /np.pi
+        if not self.AI:
+            barrel_direction = pg.mouse.get_pos() - pg.math.Vector2(self.x, self.y)
+            self.barrel_angle = np.arctan2(barrel_direction[1], barrel_direction[0]) * 180 / np.pi
+        else:
+            self.barrel_angle = 45
 
         # create cannon barrel
         cannon = pg.Surface((4, 23), pg.SRCALPHA)
-        cannon.fill((0, 0, 0))
+        cannon.fill(self.color)
         cannon = pg.transform.rotate(cannon, -self.barrel_angle - 90)
         cannon_rect = cannon.get_rect()
         if self.barrel_angle >= -90:
@@ -92,7 +93,7 @@ class Tank:
         # put the mini surface on the screen
         if self.invisible_mode == True:
             newtanksurface.set_alpha(50)
-        if self.ishit ==True:
+        if self.ishit == True:
             newtanksurface.set_alpha(0)
         scr.blit(newtanksurface, tank_surface_results[1].center)
 
@@ -119,18 +120,20 @@ class Tank:
             if len(Bulletlist) >= 1:
                 if Bulletlist[-1].Tank == self:
                     alpha = np.arctan2(Bulletlist[-1].pos[1], Bulletlist[-1].pos[0])
-                    xpos = np.cos(alpha) * Bulletlist[-1].vel.length() * (Bulletlist[-1].pos[1] - self.y) / Bulletlist[-1].vel[1] + Bulletlist[-1].pos[0]
-                    if (Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y)).length() < 200 and np.abs((Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y))[0]) < 100:
+                    xpos = np.cos(alpha) * Bulletlist[-1].vel.length() * (Bulletlist[-1].pos[1] - self.y) / \
+                           Bulletlist[-1].vel[1] + Bulletlist[-1].pos[0]
+                    if (Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y)).length() < 200 and np.abs(
+                            (Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y))[0]) < 100:
                         self.wantstoshootnow = False
-                       ## print((Bulletlist[-1].pos + Bulletlist[-1].vel * 0.0005 * (Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y)).length() - pg.math.Vector2(self.x, self.y))[0])
+                        ## print((Bulletlist[-1].pos + Bulletlist[-1].vel * 0.0005 * (Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y)).length() - pg.math.Vector2(self.x, self.y))[0])
                         if xpos > 0:
                             self.move(1)
                             self.wantstoshootnow = True
                         else:
                             self.move(-1)
                             self.wantstoshootnow = True
-                #if len(Bulletlist) >= 2:
-                    # if Bulletlist[-2].Tank == self:
+                # if len(Bulletlist) >= 2:
+                # if Bulletlist[-2].Tank == self:
 
             if self.wantstoshootnow == True:
                 if pg.time.get_ticks() - self.cooloff_timer > self.cool_off_time:
@@ -140,9 +143,12 @@ class Tank:
                         direction = pg.math.Vector2(-300, -300)
                     else:
                         direction = pg.math.Vector2(300, -300)
-                    bullet_speed = 13.4 * np.sqrt(-9.81 * (goal[0])**2 / (goal[1] - goal[0] * np.sign(goal[0]))) - goal[1] * 1.2 - 3000 * 1/goal[0]
+                    bullet_speed = 13.4 * np.sqrt(-9.81 * (goal[0]) ** 2 / (goal[1] - goal[0] * np.sign(goal[0]))) - \
+                                   goal[1] * 1.2 - 3000 * 1 / goal[0]
                     direction = direction.normalize()
-                    Bulletlist.append(Bullet((self.x, self.y), (15, 5), direction * bullet_speed + self.vel, (0, 255, 0), pg.time.get_ticks()))
+                    Bulletlist.append(
+                        Bullet((self.x, self.y), (15, 5), direction * bullet_speed + self.vel, (0, 255, 0),
+                               pg.time.get_ticks()))
                     Bulletlist[-1].Tank = other_tank
             else:
                 # move in the best direction
@@ -196,8 +202,11 @@ class Bullet:
         self.rotated_surface = pg.transform.rotate(self.surface, -np.degrees(self.angle))
         self.rotated_rect = self.rotated_surface.get_rect(center=self.pos)
 
+        # used for a little delay between collision and deletion for the boom
+        self.delete_timer = 0
+
     def move(self):
-        # these things are similar to the ones above and should be self explanatory
+        # these things are similar to the ones above and should be self-explanatory
         self.pos += self.vel * dt
         self.angle = np.arctan2(self.vel[1], self.vel[0])
 
@@ -211,20 +220,45 @@ class Bullet:
         self.vel += self.acceleration * dt
 
     def collision(self, planet2, other_tank):
-        if self.armed == True:
-            # use pwn methods
+        # idk why this self.armed exists
+        if self.armed:
+            # if it hits the other tank
             if pg.math.Vector2((other_tank.x, other_tank.y) - self.pos).length() <= 15:
                 self.boom()
                 other_tank.ishit = True
                 self.underground = True
-            if pg.math.Vector2(planet2.pos - self.pos).length() <= planet2.radius + 40:
+            # if it hits the planet
+            if pg.math.Vector2(planet2.pos - self.pos).length() <= planet2.radius:
                 self.boom()
                 self.underground = True
-            if pg.math.Vector2(planet2.pos - self.pos).length() <= planet2.radius:
-                self.surface.set_alpha(0)
 
+    # just put in the boom image
     def boom(self):
         self.surface = pg.Surface((50, 50))
         self.surface.set_colorkey((50, 50, 50))
         self.surface.fill((255, 0, 0))
 
+        boom_image = pg.image.load("Artwork/boom.png")
+        boom_image.convert()
+        self.surface.blit(boom_image, (-25, -30))
+
+
+# button class includes a bunch of stuff for positioning and color,
+# but it does not include any functionality
+class Button:
+    def __init__(self, center, size, color, text, textcolor, font):
+        self.center = pg.math.Vector2(center)
+        self.size = pg.math.Vector2(size)
+        self.color = color
+        self.text = text
+        self.textcolor = textcolor
+
+        self.pos = self.center - self.size / 2
+        self.rect = pg.Rect(self.pos, self.size)
+        self.text_surf = font.render(self.text, True, self.textcolor)
+        self.text_rect = self.text_surf.get_rect(center=self.center)
+
+    def is_clicked(self, mouse_pos):
+        if self.rect.left < mouse_pos[0] < self.rect.right and self.rect.bottom > mouse_pos[1] > self.rect.top:
+            return True
+        return False
