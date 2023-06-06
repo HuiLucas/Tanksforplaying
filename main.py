@@ -87,6 +87,7 @@ running = True # is the main program itself running
 play_button = custom.Button([display_width/2, display_height/4], [300, 100], WHITE, "Play", BLACK, font1)
 controls_button = custom.Button([display_width/2, display_height/4*2], [300, 100], WHITE, "How to play", BLACK, font1)
 exit_button = custom.Button([display_width/2, display_height/4*3], [300, 100], WHITE, "Exit", BLACK, font1)
+dev_mode_button = custom.Button([display_width/2 + 400, display_height/4*3], [300, 100], WHITE, "Dev Mode", BLACK, font1)
 
 # main menu
 while menu_running:
@@ -115,6 +116,9 @@ while menu_running:
     # exit button
     pg.draw.rect(screen, exit_button.color, exit_button.rect)
     screen.blit(exit_button.text_surf, exit_button.text_rect)
+    # dev mode button
+    pg.draw.rect(screen, dev_mode_button.color, dev_mode_button.rect)
+    screen.blit(dev_mode_button.text_surf, dev_mode_button.text_rect)
 
     # get mouse click
     if pg.mouse.get_pressed()[0]:
@@ -133,6 +137,12 @@ while menu_running:
             pg.quit()
             running = False
             menu_running = False
+            break
+
+        # check if mouse click is in dev mode button
+        if dev_mode_button.is_clicked(mouse_pos):
+            menu_running = False
+            running = True
             break
 
     pg.display.flip()
@@ -184,8 +194,10 @@ while running:
         tank.move(0)
 
     # move AI Tank
-    AI_tank.wantstoshootnow = False
+
     AI_tank.AI_move(bullets, tank, planet)
+    if dev_mode_button.activated == True:
+        screen.blit(font1.render("wheh", False, WHITE), (AI_tank.predictposition, 200))
 
     # text with misc content for debugging
     screen.blit(font1.render(str(pg.time.get_ticks()), False, WHITE), (200, 200))
@@ -221,7 +233,8 @@ while running:
         else:
             # update and display
             # if the bullet is not completely faded in, it does not shoot
-            # makes sense since you won't get to point-blank
+            # makes sense since you won't get to point-blank, and you do not want the bullet to explode in the
+            # shooting tank itself.
             if pg.time.get_ticks() - bullet.firetime < 200:
                 bullet.armed = False
                 bullet.surface.set_alpha(100)
@@ -249,6 +262,15 @@ while running:
     # display the crosshair
     crosshair.pos = pg.mouse.get_pos()
     screen.blit(crosshair.surface, crosshair.surface.get_rect(center=crosshair.pos))
+
+    # make hits visible without killing any of the tanks
+    if dev_mode_button.activated == True:
+        if AI_tank.ishit == True:
+            AI_tank.color = (random.randint(0,255), random.randint(0, 255), random.randint(0, 255))
+        if tank.ishit == True:
+            tank.color = (random.randint(0,255), random.randint(0, 255), random.randint(0, 255))
+        AI_tank.ishit = False
+        tank.ishit = False
 
     pg.display.flip()
     clock.tick(framerate)

@@ -32,6 +32,7 @@ class Tank:
         self.cool_off_time = 0
         self.cooloff_timer = 0
         self.ishit = False
+        self.predictposition = 0
 
         # to make sure the tank doesn't leave the screen
         self.boundary_angle = boundary_angle
@@ -119,21 +120,23 @@ class Tank:
         if self.AI == True:
             if len(Bulletlist) >= 1:
                 if Bulletlist[-1].Tank == self:
-                    alpha = np.arctan2(Bulletlist[-1].pos[1], Bulletlist[-1].pos[0])
-                    xpos = np.cos(alpha) * Bulletlist[-1].vel.length() * (Bulletlist[-1].pos[1] - self.y) / \
-                           Bulletlist[-1].vel[1] + Bulletlist[-1].pos[0]
-                    if (Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y)).length() < 200 and np.abs(
-                            (Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y))[0]) < 100:
+                    alpha2 = Bulletlist[-1].angle
+                    print((Bulletlist[-1].pos[1] - self.y) / Bulletlist[-1].vel[1])
+                    xpos = np.cos(alpha2) * Bulletlist[-1].vel.length() * (Bulletlist[-1].pos[1] - self.y) / Bulletlist[-1].vel[1]
+                    if (Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y)).length() < 200 or np.abs((Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y))[0]) < 100:
                         self.wantstoshootnow = False
                         ## print((Bulletlist[-1].pos + Bulletlist[-1].vel * 0.0005 * (Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y)).length() - pg.math.Vector2(self.x, self.y))[0])
                         if xpos > 0:
                             self.move(1)
+                            #print(xpos)
                             self.wantstoshootnow = True
                         else:
                             self.move(-1)
+                            #print(xpos)
                             self.wantstoshootnow = True
-                # if len(Bulletlist) >= 2:
-                # if Bulletlist[-2].Tank == self:
+                    self.predictposition = xpos + self.x
+                #if len(Bulletlist) >= 2:
+                    # if Bulletlist[-2].Tank == self:
 
             if self.wantstoshootnow == True:
                 if pg.time.get_ticks() - self.cooloff_timer > self.cool_off_time:
@@ -220,7 +223,9 @@ class Bullet:
         self.vel += self.acceleration * dt
 
     def collision(self, planet2, other_tank):
-        # idk why this self.armed exists
+        # idk why this self.armed exists # RE:The reason is to not activate the bullet when it is still close to the
+        # shooting tank, otherwise it would just explode directly after shooting, destroying the shooting tank. Instead,
+        # the bullet is armed after a few milliseconds after being launched.
         if self.armed:
             # if it hits the other tank
             if pg.math.Vector2((other_tank.x, other_tank.y) - self.pos).length() <= 15:
@@ -252,6 +257,7 @@ class Button:
         self.color = color
         self.text = text
         self.textcolor = textcolor
+        self.activated = False
 
         self.pos = self.center - self.size / 2
         self.rect = pg.Rect(self.pos, self.size)
@@ -260,5 +266,6 @@ class Button:
 
     def is_clicked(self, mouse_pos):
         if self.rect.left < mouse_pos[0] < self.rect.right and self.rect.bottom > mouse_pos[1] > self.rect.top:
-            return True
+            self.activated = True
+            return self.activated
         return False
