@@ -118,25 +118,50 @@ class Tank:
     def AI_move(self, Bulletlist, other_tank, planet4):
         # insert AI code here
         if self.AI == True:
-            if len(Bulletlist) >= 1:
+            if len(Bulletlist) == 1:
                 if Bulletlist[-1].Tank == self:
-                    alpha2 = Bulletlist[-1].angle
-                    print((Bulletlist[-1].pos[1] - self.y) / Bulletlist[-1].vel[1])
-                    xpos = np.cos(alpha2) * Bulletlist[-1].vel.length() * (Bulletlist[-1].pos[1] - self.y) / Bulletlist[-1].vel[1]
-                    if (Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y)).length() < 200 or np.abs((Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y))[0]) < 100:
-                        self.wantstoshootnow = False
-                        ## print((Bulletlist[-1].pos + Bulletlist[-1].vel * 0.0005 * (Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y)).length() - pg.math.Vector2(self.x, self.y))[0])
-                        if xpos > 0:
-                            self.move(1)
-                            #print(xpos)
-                            self.wantstoshootnow = True
-                        else:
-                            self.move(-1)
-                            #print(xpos)
-                            self.wantstoshootnow = True
-                    self.predictposition = xpos + self.x
-                #if len(Bulletlist) >= 2:
-                    # if Bulletlist[-2].Tank == self:
+                    if Bulletlist[-1].angle>0:
+                        #alpha2 = Bulletlist[-1].angle
+                        alpha2 = np.arctan2(np.sin(Bulletlist[-1].angle)*Bulletlist[-1].vel.length(), np.cos(Bulletlist[-1].angle)*Bulletlist[-1].vel.length()*1.3)
+                        #print((Bulletlist[-1].pos[1] - self.y) / Bulletlist[-1].vel[1])
+                        x_side = np.abs(Bulletlist[-1].pos[1] - Bulletlist[-1].Tank.y)/np.tan(alpha2) + Bulletlist[-1].pos[0]
+                        #xpos = np.cos(alpha2) * Bulletlist[-1].vel.length() * (Bulletlist[-1].pos[1] - self.y) / Bulletlist[-1].vel[1]
+                        xpos = x_side - self.x
+                        if (Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y)).length() < 200 or np.abs((Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y))[0]) < 100:
+                            self.wantstoshootnow = False
+                            ## print((Bulletlist[-1].pos + Bulletlist[-1].vel * 0.0005 * (Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y)).length() - pg.math.Vector2(self.x, self.y))[0])
+                            if xpos < 0:
+                                self.move(1)
+                                #print(xpos)
+                                self.wantstoshootnow = True
+                            else:
+                                self.move(-1)
+                                #print(xpos)
+                                self.wantstoshootnow = True
+                        self.predictposition = xpos + self.x
+                    #else:
+            elif len(Bulletlist) >= 2:
+                if Bulletlist[-2].Tank == self:
+                    if Bulletlist[-2].angle>0:
+                        #alpha2 = Bulletlist[-2].angle
+                        alpha2 = np.arctan2(np.sin(Bulletlist[-2].angle)*Bulletlist[-2].vel.length(), np.cos(Bulletlist[-2].angle)*Bulletlist[-2].vel.length()*1.3)
+                        #print((Bulletlist[-2].pos[1] - self.y) / Bulletlist[-2].vel[1])
+                        x_side = np.abs(Bulletlist[-1].pos[1] - Bulletlist[-1].Tank.y)/np.tan(alpha2) + Bulletlist[-1].pos[0]
+                        #xpos = np.cos(alpha2) * Bulletlist[-2].vel.length() * (Bulletlist[-2].pos[1] - self.y) / Bulletlist[-2].vel[1]
+                        xpos = x_side - self.x
+                        if (Bulletlist[-2].pos - pg.math.Vector2(self.x, self.y)).length() < 200 or np.abs((Bulletlist[-2].pos - pg.math.Vector2(self.x, self.y))[0]) < 100:
+                            self.wantstoshootnow = False
+                            ## print((Bulletlist[-2].pos + Bulletlist[-2].vel * 0.0005 * (Bulletlist[-2].pos - pg.math.Vector2(self.x, self.y)).length() - pg.math.Vector2(self.x, self.y))[0])
+                            if xpos < 0:
+                                self.move(1)
+                                #print(xpos)
+                                self.wantstoshootnow = True
+                            else:
+                                self.move(-1)
+                                #print(xpos)
+                                self.wantstoshootnow = True
+                        self.predictposition = xpos + self.x
+                    #else:
 
             if self.wantstoshootnow == True:
                 if pg.time.get_ticks() - self.cooloff_timer > self.cool_off_time:

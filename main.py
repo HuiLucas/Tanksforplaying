@@ -272,6 +272,17 @@ while running:
         AI_tank.ishit = False
         tank.ishit = False
 
+    # some stuff to visualize variables to debug them
+    if dev_mode_button.activated == True and not len(bullets) == 0:
+        AI_tank.cooloff_timer = pg.time.get_ticks()
+        if bullets[-1].angle > 0:
+            angle3 = np.arctan2(np.sin(bullets[-1].angle)*bullets[-1].vel.length(), np.cos(bullets[-1].angle)*bullets[-1].vel.length()*1.3)
+            angle_visualizer = pg.Surface((np.abs(bullets[-1].pos[1] - bullets[-1].Tank.y)/np.sin(angle3), 10), pg.SRCALPHA)
+            angle_visualizer.fill(RED)
+            angle_visualizer = pg.transform.rotate(angle_visualizer, -angle3 * 180 / np.pi)
+            screen.blit(angle_visualizer, bullets[-1].pos)
+            print(angle3)
+
     pg.display.flip()
     clock.tick(framerate)
 
