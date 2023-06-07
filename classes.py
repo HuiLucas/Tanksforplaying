@@ -8,7 +8,7 @@ agility_multiplier = 1e-1
 movement_dampening = 1.2
 dt = 1/60  # time step
 gravity = 9.80665e9 #1e10  # gravity for the bullets. IDK why it has to be so absurdly high (real life G is ~10^-11)
-
+immunity_time = 500
 
 # planet class is pretty bare-bones, but it helps a lot with organization
 class Planet:
@@ -38,8 +38,8 @@ class Tank:
         # to make sure the tank doesn't leave the screen
         self.boundary_angle = boundary_angle
         if boundary_angle == -10:  # there are no boundaries, the entire planet is on screen
-            self.lower_angle_boundary = -4 * np.pi
-            self.upper_angle_boundary = 4 * np.pi
+            self.lower_angle_boundary = -4000 * np.pi
+            self.upper_angle_boundary = 4000 * np.pi
         else:
             # the tank cannot go further than the screen
             self.lower_angle_boundary = - np.pi / 2 - boundary_angle
@@ -67,6 +67,9 @@ class Tank:
 
         # AI variables/preferences
         self.wantstoshootnow = False
+        # health
+        self.health = 5
+        self.last_hit_time = 0
 
     def display(self, planet1, scr):  # function to display tank
         # get direction of cannon barrel
@@ -93,13 +96,17 @@ class Tank:
         newtanksurface.blit(cannon, cannon_rect)
 
         # put the mini surface on the screen
-        if self.invisible_mode == True:
+        if self.invisible_mode:
             newtanksurface.set_alpha(50)
-        if self.ishit == True:
-            newtanksurface.set_alpha(0)
+
+        # if tank is destroyed
+        if self.health <= 0:
+            self.surface.set_alpha(0)
+        # if the tank is blinking, so should the barrel
+        newtanksurface.set_alpha(self.surface.get_alpha())
         scr.blit(newtanksurface, tank_surface_results[1].center)
 
-    def move(self, movement=0):
+    def move(self, movement, current_time=1e10):
         self.angvel += self.agility * movement * agility_multiplier * dt
         self.angle += self.angvel * dt
 
@@ -115,6 +122,27 @@ class Tank:
             self.angle = self.upper_angle_boundary
         elif self.angle < self.lower_angle_boundary:
             self.angle = self.lower_angle_boundary
+
+        # if the tank is hit, decrease its health
+        hit_time = current_time - self.last_hit_time
+        if self.ishit and hit_time > immunity_time and self.health > 0:
+            print(f"is hit, health now {self.health}")
+            # 0.5 because the bullet hits twice for some reason,
+            # i'm too lazy to fix it now
+            self.health -= 0.5
+            self.ishit = False
+            self.last_hit_time = current_time
+        # when hit, the tank flashes
+        elif hit_time < immunity_time and self.health > 0:
+            if hit_time < immunity_time / 4:
+                self.surface.set_alpha(20)
+            elif hit_time < 2 * immunity_time / 4:
+                self.surface.set_alpha(255)
+            elif hit_time < 3 * immunity_time / 4:
+                self.surface.set_alpha(20)
+            elif hit_time < 4 * immunity_time / 4:
+                self.surface.set_alpha(255)
+
 
     def AI_move(self, Bulletlist2, other_tank, planet4):
         # insert AI code here
@@ -299,6 +327,7 @@ class Button:
         self.text_surf = font.render(self.text, True, self.textcolor)
         self.text_rect = self.text_surf.get_rect(center=self.center)
 
+    # literally checks if the mouse is inside the button Rect
     def is_clicked(self, mouse_pos):
         if self.rect.left < mouse_pos[0] < self.rect.right and self.rect.bottom > mouse_pos[1] > self.rect.top:
             self.activated = True

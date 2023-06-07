@@ -10,7 +10,7 @@ import classes as custom
 # set up constants
 display_height = 700
 display_width = 1200
-cool_off_time = 1000  # minimum time between shots (in ms)
+cool_off_time = 800  # minimum time between shots (in ms)
 bullet_speed = 1200
 
 planet_radius = 4  # these values don't actually mean anything, just fiddle with them until they're okay
@@ -57,7 +57,7 @@ planet = custom.Planet((display_width / 2, display_height * planet_radius),
 
 # set up movement boundaries for the tank
 if display_width < planet.radius * 2:
-    boundary_angle = np.arcsin(display_width / (2 * planet.radius))
+    boundary_angle = np.arcsin(display_width / (2 * planet.radius)) - np.pi/100
 else:
     boundary_angle = -10  # -10 is an impossible value, so it's recognizable
 
@@ -82,6 +82,7 @@ AI_tank.cooloff_timer = pg.time.get_ticks() + 2000
 
 menu_running = True # is the menu screen running
 running = True # is the main program itself running
+dev_mode = False
 
 # buttons
 play_button = custom.Button([display_width/2, display_height/4], [300, 100], WHITE, "Play", BLACK, font1)
@@ -143,6 +144,7 @@ while menu_running:
         if dev_mode_button.is_clicked(mouse_pos):
             menu_running = False
             running = True
+            dev_mode = True
             break
 
     pg.display.flip()
@@ -184,23 +186,24 @@ while running:
     # move the tank (1 is right, -1 is left. don't change these, they act like booleans)
     if keys[pg.K_RIGHT]:
         screen.blit(font1.render("Right arrow key pressed", False, WHITE), (100, 100))
-        tank.move(1)
+        tank.move(1, pg.time.get_ticks())
         tank.cooloff_timer = pg.time.get_ticks()
     elif keys[pg.K_LEFT]:
         screen.blit(font1.render("Left arrow key pressed", False, WHITE), (100, 100))
-        tank.move(-1)
+        tank.move(-1, pg.time.get_ticks())
         tank.cooloff_timer = pg.time.get_ticks()
     else:
-        tank.move(0)
+        tank.move(0, pg.time.get_ticks())
 
     # move AI Tank
 
     AI_tank.AI_move(bullets, tank, planet)
-    if dev_mode_button.activated == True:
+    if dev_mode:
         screen.blit(font1.render("wheh", False, WHITE), (AI_tank.predictposition, 200))
 
     # text with misc content for debugging
-    screen.blit(font1.render(str(pg.time.get_ticks()), False, WHITE), (200, 200))
+    screen.blit(font1.render(str(AI_tank.surface.get_alpha()), False, WHITE), (200, 200))
+    screen.blit(font1.render(str(AI_tank.health), False, WHITE), (500, 200))
     if pg.time.get_ticks() - tank.cooloff_timer >= tank.cool_off_time:
         screen.blit(font1.render(str(pg.time.get_ticks() - tank.cooloff_timer), False, GREEN), (200, 250))
     else:
@@ -264,7 +267,7 @@ while running:
     screen.blit(crosshair.surface, crosshair.surface.get_rect(center=crosshair.pos))
 
     # make hits visible without killing any of the tanks
-    if dev_mode_button.activated == True:
+    if dev_mode == True:
         if AI_tank.ishit == True:
             AI_tank.color = (random.randint(0,255), random.randint(0, 255), random.randint(0, 255))
         if tank.ishit == True:
@@ -273,7 +276,7 @@ while running:
         tank.ishit = False
 
     # some stuff to visualize variables to debug them
-    if dev_mode_button.activated == True and not len(bullets) == 0:
+    if dev_mode and not len(bullets) == 0:
         AI_tank.cooloff_timer = pg.time.get_ticks()
         if bullets[-1].angle > 0:
             angle3 = np.arctan2(np.sin(bullets[-1].angle)*bullets[-1].vel.length(), np.cos(bullets[-1].angle)*bullets[-1].vel.length()*1.3)
@@ -297,11 +300,14 @@ pg.quit()
 # main menu
 # textures
 # health bars
+    # a small bar under each tank
 # ammo?
 # bullet imprecision (random errors)
-# multiple ai tanks?
+# multiple ai tanks
+# level implementation
 
-# image for boom does not fit properly
+# boom sound effect for boom.png and firing and tank hit and tank destroyed
+
+# tank blink on hit for 0.3 seconds to stop tank from taking multiple damage
 # make the bullet appear at the end of the barrel
-# fix the ai barrel following the mouse
 # remove the bullet fading at the beginning, it's kinda pointless
