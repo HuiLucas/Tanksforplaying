@@ -127,19 +127,21 @@ class Tank:
                         x_side = np.abs(Bulletlist[-1].pos[1] - Bulletlist[-1].Tank.y)/np.tan(alpha2) + Bulletlist[-1].pos[0]
                         #xpos = np.cos(alpha2) * Bulletlist[-1].vel.length() * (Bulletlist[-1].pos[1] - self.y) / Bulletlist[-1].vel[1]
                         xpos = x_side - self.x
-                        if (Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y)).length() < 200 or np.abs((Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y))[0]) < 100:
-                            self.wantstoshootnow = False
-                            ## print((Bulletlist[-1].pos + Bulletlist[-1].vel * 0.0005 * (Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y)).length() - pg.math.Vector2(self.x, self.y))[0])
-                            if xpos < 0:
-                                self.move(1)
-                                #print(xpos)
-                                self.wantstoshootnow = True
-                            else:
-                                self.move(-1)
-                                #print(xpos)
-                                self.wantstoshootnow = True
-                        self.predictposition = xpos + self.x
-                    #else:
+                    else:
+                        x_side = (Bulletlist[-1].vel[0]*Bulletlist[-1].vel[1] + np.sqrt(Bulletlist[-1].vel[1]**2 + 2 * 9.80665 * (Bulletlist[-1].pos[1] - Bulletlist[-1].Tank.y)) * Bulletlist[-1].vel[0])/9.80665
+                        xpos = x_side + Bulletlist[-1].pos[0]  - self.x
+                    if (Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y)).length() < 200 or np.abs((Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y))[0]) < 100:
+                        self.wantstoshootnow = False
+                        ## print((Bulletlist[-1].pos + Bulletlist[-1].vel * 0.0005 * (Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y)).length() - pg.math.Vector2(self.x, self.y))[0])
+                        if xpos < 0:
+                            self.move(1)
+                            #print(xpos)
+                            self.wantstoshootnow = True
+                        else:
+                            self.move(-1)
+                            #print(xpos)
+                            self.wantstoshootnow = True
+                    self.predictposition = xpos + self.x
             elif len(Bulletlist) >= 2:
                 if Bulletlist[-2].Tank == self:
                     if Bulletlist[-2].angle>0:
