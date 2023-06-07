@@ -195,6 +195,13 @@ class Tank:
                     bullet_speed = 13.4 * np.sqrt(-9.81 * (goal[0]) ** 2 / (goal[1] - goal[0] * np.sign(goal[0]))) - \
                                    goal[1] * 1.2 - 3000 * 1 / goal[0]
                     direction = direction.normalize()
+                    deviation = 11
+                    while np.abs(deviation) > 10:
+                        Virtualbullet = Bullet((self.x, self.y), (15, 5), direction * bullet_speed + self.vel, (0, 255, 0),
+                                   pg.time.get_ticks())
+                        deviation = (pg.math.Vector2(other_tank.x, other_tank.y) - Virtualbullet.predicted_landing_spot(planet4))[0]
+                        print(deviation)
+                        bullet_speed -= 0.05 * deviation
                     Bulletlist2.append(
                         Bullet((self.x, self.y), (15, 5), direction * bullet_speed + self.vel, (0, 255, 0),
                                pg.time.get_ticks()))
