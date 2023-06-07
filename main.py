@@ -67,7 +67,9 @@ tank.cool_off_time = cool_off_time
 
 # AI tank
 AI_tank = custom.Tank(-np.pi / 2 + 0.1, (20, 30), 8, WHITE, boundary_angle, True)
+AI_tank2 = custom.Tank(-np.pi / 2 -0.1, (20, 30), 8, GREEN, boundary_angle, True)
 AI_tank.cool_off_time = cool_off_time
+AI_tank2.cool_off_time = cool_off_time
 
 # create the crosshair
 crosshair = custom.Crosshairs((0, 0), (50, 50))
@@ -78,6 +80,7 @@ bullets = []
 # start the cool-off timer
 tank.cooloff_timer = pg.time.get_ticks()
 AI_tank.cooloff_timer = pg.time.get_ticks() + 2000
+AI_tank2.cooloff_timer = pg.time.get_ticks() + 2000
 
 
 menu_running = True # is the menu screen running
@@ -197,7 +200,8 @@ while running:
 
     # move AI Tank
 
-    AI_tank.AI_move(bullets, tank, planet)
+    AI_tank.AI_move(bullets, planet)
+    AI_tank2.AI_move(bullets, planet)
     if dev_mode:
         screen.blit(font1.render("wheh", False, WHITE), (AI_tank.predictposition, 200))
 
@@ -225,6 +229,7 @@ while running:
     # AI_tank.invisible_mode = True
     tank.display(planet, screen)
     AI_tank.display(planet, screen)
+    AI_tank2.display(planet, screen)
 
     # deal with bullets
     for bullet in bullets:
@@ -260,7 +265,7 @@ while running:
             bullet.attraction(planet.pos)
             bullet.move()
             screen.blit(bullet.rotated_surface, bullet.rotated_rect)
-            bullet.collision(planet, bullet.Tank)
+            bullet.collision(planet)
 
     # display the crosshair
     crosshair.pos = pg.mouse.get_pos()

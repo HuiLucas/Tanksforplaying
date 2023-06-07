@@ -1,3 +1,5 @@
+import random
+
 import pygame as pg
 import numpy as np
 
@@ -9,6 +11,7 @@ movement_dampening = 1.2
 dt = 1/60  # time step
 gravity = 9.80665e9 #1e10  # gravity for the bullets. IDK why it has to be so absurdly high (real life G is ~10^-11)
 immunity_time = 500
+Tanklist =[]
 
 # planet class is pretty bare-bones, but it helps a lot with organization
 class Planet:
@@ -34,6 +37,8 @@ class Tank:
         self.cooloff_timer = 0
         self.ishit = False
         self.predictposition = 0
+        self.index_in_Tanklist = len(Tanklist)
+        Tanklist.append(self)
 
         # to make sure the tank doesn't leave the screen
         self.boundary_angle = boundary_angle
@@ -144,49 +149,48 @@ class Tank:
                 self.surface.set_alpha(255)
 
 
-    def AI_move(self, Bulletlist2, other_tank, planet4):
-        # insert AI code here
+    def AI_move(self, Bulletlist2, planet4):
+        # only if the tank is AI:
         if self.AI == True:
+            # only consider bullets that are still in the air
             Bulletlist = []
             for bullet in Bulletlist2:
                 if bullet.underground == False:
                     Bulletlist.append(bullet)
-            #print(len(Bulletlist))
+            # if there is one bullet in the air, evade that one
             if len(Bulletlist) == 1:
-                if Bulletlist[-1].Tank == self:
-                    predpos = Bulletlist[-1].predicted_landing_spot(planet4)
-                    if np.abs(predpos[0] - self.x) < 100:
+                # if the bullet is aimed at the tank, evade it
+                predpos = Bulletlist[-1].predicted_landing_spot(planet4) # calculate landing spot of bullet
+                if np.abs(predpos[0] - self.x) < 100: # if bullet lands close to tank, move
+                    if predpos[0] < self.x:
+                        self.move(1)
+                        self.wantstoshootnow = True # After moving, the tank may shoot
 
-                        if predpos[0] < self.x:
-                            self.move(1)
-                            self.wantstoshootnow = True
-                            #print("right")
-                        else:
-                            self.move(-1)
-                            self.wantstoshootnow = True
-                            #print("left")
-                #else:
-                    #print("not me")
+                    else:
+                        self.move(-1)
+                        self.wantstoshootnow = True
+            # Do the same for the second Bullet in the air if there is one
             elif len(Bulletlist) >= 2:
-                if Bulletlist[-2].Tank == self:
-                    if Bulletlist[-2].Tank == self:
-                        predpos = Bulletlist[-2].predicted_landing_spot(planet4)
-                        if np.abs(predpos[0] - self.x) < 100:
-
-                            if predpos[0] < self.x:
-                                self.move(1)
-                                self.wantstoshootnow = True
-                                # print("right")
-                            else:
-                                self.move(-1)
-                                self.wantstoshootnow = True
-                                # print("left")
-                    # else:
-                    # print("not me")
-
+                predpos = Bulletlist[-2].predicted_landing_spot(planet4)
+                if np.abs(predpos[0] - self.x) < 100:
+                    if predpos[0] < self.x:
+                        self.move(1)
+                        self.wantstoshootnow = True
+                    else:
+                        self.move(-1)
+                        self.wantstoshootnow = True
+            # AI tank shoots using the following code
             if self.wantstoshootnow == True:
+                # It shoots only if the timer allows it
                 if pg.time.get_ticks() - self.cooloff_timer > self.cool_off_time:
                     self.cooloff_timer = pg.time.get_ticks()
+                    list_of_other_tanks = []
+                    for Tankthing in Tanklist:
+                        list_of_other_tanks.append(Tankthing)
+                    list_of_other_tanks.pop(self.index_in_Tanklist)
+                    randindex = random.randint(0, len(list_of_other_tanks) - 1)
+                    other_tank = list_of_other_tanks[randindex]
+                    # this is the target for the bullet
                     goal = pg.math.Vector2(other_tank.x, other_tank.y) - pg.math.Vector2(self.x, self.y)
                     if goal[0] < 0:
                         direction = pg.math.Vector2(-300, -300)
@@ -200,12 +204,11 @@ class Tank:
                         Virtualbullet = Bullet((self.x, self.y), (15, 5), direction * bullet_speed + self.vel, (0, 255, 0),
                                    pg.time.get_ticks())
                         deviation = (pg.math.Vector2(other_tank.x, other_tank.y) - Virtualbullet.predicted_landing_spot(planet4))[0]
-                        #print(deviation)
                         bullet_speed -= 0.05 * deviation
                     Bulletlist2.append(
                         Bullet((self.x, self.y), (15, 5), direction * bullet_speed + self.vel, (0, 255, 0),
                                pg.time.get_ticks()))
-                    Bulletlist2[-1].Tank = other_tank
+
 
             else:
                 # move in the best direction
@@ -250,7 +253,7 @@ class Bullet:
         self.firetime = firetime
         self.armed = False
         self.underground = False
-        self.Tank = None
+
 
         self.surface = pg.Surface(size)
         self.surface.set_colorkey((50, 50, 50))
@@ -276,20 +279,22 @@ class Bullet:
         self.acceleration = gravity * rel_dist / rel_dist.magnitude() ** 3
         self.vel += self.acceleration * dt
 
-    def collision(self, planet2, other_tank):
+    def collision(self, planet2):
         # idk why this self.armed exists # RE:The reason is to not activate the bullet when it is still close to the
         # shooting tank, otherwise it would just explode directly after shooting, destroying the shooting tank. Instead,
         # the bullet is armed after a few milliseconds after being launched.
         if self.armed:
-            # if it hits the other tank
-            if pg.math.Vector2((other_tank.x, other_tank.y) - self.pos).length() <= 15:
-                self.boom()
-                other_tank.ishit = True
-                self.underground = True
-            # if it hits the planet
-            if pg.math.Vector2(planet2.pos - self.pos).length() <= planet2.radius:
-                self.boom()
-                self.underground = True
+            # if it hits a tank
+            if not len(Tanklist) == 0:
+                for tankk in Tanklist:
+                    if pg.math.Vector2((tankk.x, tankk.y) - self.pos).length() <= 25:
+                        self.boom()
+                        tankk.ishit = True
+                        self.underground = True
+                    # if it hits the planet
+                    if pg.math.Vector2(planet2.pos - self.pos).length() <= planet2.radius:
+                        self.boom()
+                        self.underground = True
 
     # just put in the boom image
     def boom(self):
