@@ -282,7 +282,7 @@ class Bullet:
         # the bullet is armed after a few milliseconds after being launched.
         if self.armed:
             # if it hits the other tank
-            if pg.math.Vector2((other_tank.x, other_tank.y) - self.pos).length() <= 15:
+            if pg.math.Vector2((other_tank.x, other_tank.y) - self.pos).length() <= 25:
                 self.boom()
                 other_tank.ishit = True
                 self.underground = True
