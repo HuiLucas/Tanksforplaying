@@ -1,12 +1,13 @@
 import pygame as pg
 import numpy as np
+
 import numba
 
 # constants for the classes
 agility_multiplier = 1e-1
 movement_dampening = 1.2
-dt = 0.02  # time step
-gravity = 1e10  # gravity for the bullets. IDK why it has to be so absurdly high (real life G is ~10^-11)
+dt = 1/60  # time step
+gravity = 9.80665e9 #1e10  # gravity for the bullets. IDK why it has to be so absurdly high (real life G is ~10^-11)
 
 
 # planet class is pretty bare-bones, but it helps a lot with organization
@@ -115,55 +116,45 @@ class Tank:
         elif self.angle < self.lower_angle_boundary:
             self.angle = self.lower_angle_boundary
 
-    def AI_move(self, Bulletlist, other_tank, planet4):
+    def AI_move(self, Bulletlist2, other_tank, planet4):
         # insert AI code here
         if self.AI == True:
+            Bulletlist = []
+            for bullet in Bulletlist2:
+                if bullet.underground == False:
+                    Bulletlist.append(bullet)
+            #print(len(Bulletlist))
             if len(Bulletlist) == 1:
                 if Bulletlist[-1].Tank == self:
-                    if Bulletlist[-1].angle>0:
-                        #alpha2 = Bulletlist[-1].angle
-                        alpha2 = np.arctan2(np.sin(Bulletlist[-1].angle)*Bulletlist[-1].vel.length(), np.cos(Bulletlist[-1].angle)*Bulletlist[-1].vel.length()*1.3)
-                        #print((Bulletlist[-1].pos[1] - self.y) / Bulletlist[-1].vel[1])
-                        x_side = np.abs(Bulletlist[-1].pos[1] - Bulletlist[-1].Tank.y)/np.tan(alpha2) + Bulletlist[-1].pos[0]
-                        #xpos = np.cos(alpha2) * Bulletlist[-1].vel.length() * (Bulletlist[-1].pos[1] - self.y) / Bulletlist[-1].vel[1]
-                        xpos = x_side - self.x
-                    else:
-                        x_side = (Bulletlist[-1].vel[0]*Bulletlist[-1].vel[1] + np.sqrt(Bulletlist[-1].vel[1]**2 + 2 * 9.80665 * (Bulletlist[-1].pos[1] - Bulletlist[-1].Tank.y)) * Bulletlist[-1].vel[0])/9.80665
-                        xpos = x_side + Bulletlist[-1].pos[0]  - self.x
-                    if (Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y)).length() < 200 or np.abs((Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y))[0]) < 100:
-                        self.wantstoshootnow = False
-                        ## print((Bulletlist[-1].pos + Bulletlist[-1].vel * 0.0005 * (Bulletlist[-1].pos - pg.math.Vector2(self.x, self.y)).length() - pg.math.Vector2(self.x, self.y))[0])
-                        if xpos < 0:
+                    predpos = Bulletlist[-1].predicted_landing_spot(planet4)
+                    if np.abs(predpos[0] - self.x) < 100:
+
+                        if predpos[0] < self.x:
                             self.move(1)
-                            #print(xpos)
                             self.wantstoshootnow = True
+                            #print("right")
                         else:
                             self.move(-1)
-                            #print(xpos)
                             self.wantstoshootnow = True
-                    self.predictposition = xpos + self.x
+                            #print("left")
+                #else:
+                    #print("not me")
             elif len(Bulletlist) >= 2:
                 if Bulletlist[-2].Tank == self:
-                    if Bulletlist[-2].angle>0:
-                        #alpha2 = Bulletlist[-2].angle
-                        alpha2 = np.arctan2(np.sin(Bulletlist[-2].angle)*Bulletlist[-2].vel.length(), np.cos(Bulletlist[-2].angle)*Bulletlist[-2].vel.length()*1.3)
-                        #print((Bulletlist[-2].pos[1] - self.y) / Bulletlist[-2].vel[1])
-                        x_side = np.abs(Bulletlist[-1].pos[1] - Bulletlist[-1].Tank.y)/np.tan(alpha2) + Bulletlist[-1].pos[0]
-                        #xpos = np.cos(alpha2) * Bulletlist[-2].vel.length() * (Bulletlist[-2].pos[1] - self.y) / Bulletlist[-2].vel[1]
-                        xpos = x_side - self.x
-                        if (Bulletlist[-2].pos - pg.math.Vector2(self.x, self.y)).length() < 200 or np.abs((Bulletlist[-2].pos - pg.math.Vector2(self.x, self.y))[0]) < 100:
-                            self.wantstoshootnow = False
-                            ## print((Bulletlist[-2].pos + Bulletlist[-2].vel * 0.0005 * (Bulletlist[-2].pos - pg.math.Vector2(self.x, self.y)).length() - pg.math.Vector2(self.x, self.y))[0])
-                            if xpos < 0:
+                    if Bulletlist[-2].Tank == self:
+                        predpos = Bulletlist[-2].predicted_landing_spot(planet4)
+                        if np.abs(predpos[0] - self.x) < 100:
+
+                            if predpos[0] < self.x:
                                 self.move(1)
-                                #print(xpos)
                                 self.wantstoshootnow = True
+                                # print("right")
                             else:
                                 self.move(-1)
-                                #print(xpos)
                                 self.wantstoshootnow = True
-                        self.predictposition = xpos + self.x
-                    #else:
+                                # print("left")
+                    # else:
+                    # print("not me")
 
             if self.wantstoshootnow == True:
                 if pg.time.get_ticks() - self.cooloff_timer > self.cool_off_time:
@@ -176,10 +167,11 @@ class Tank:
                     bullet_speed = 13.4 * np.sqrt(-9.81 * (goal[0]) ** 2 / (goal[1] - goal[0] * np.sign(goal[0]))) - \
                                    goal[1] * 1.2 - 3000 * 1 / goal[0]
                     direction = direction.normalize()
-                    Bulletlist.append(
+                    Bulletlist2.append(
                         Bullet((self.x, self.y), (15, 5), direction * bullet_speed + self.vel, (0, 255, 0),
                                pg.time.get_ticks()))
-                    Bulletlist[-1].Tank = other_tank
+                    Bulletlist2[-1].Tank = other_tank
+
             else:
                 # move in the best direction
                 self.move(0)
@@ -274,6 +266,22 @@ class Bullet:
         boom_image.convert()
         self.surface.blit(boom_image, (-25, -30))
 
+    def predicted_landing_spot(self, planet):
+        pos = [0, 0]
+        vel = [0, 0]
+        pos += self.pos
+        vel += self.vel
+        time = 0
+        rel_dist2 = pg.math.Vector2(planet.pos - pos)
+        while rel_dist2.magnitude() > planet.radius:
+            rel_dist2 = pg.math.Vector2(planet.pos - pos)
+            acceleration = gravity * rel_dist2 / rel_dist2.magnitude() ** 3
+            vel += acceleration * 1/60
+            pos += vel * 1/60
+        return pos
+
+
+
 
 # button class includes a bunch of stuff for positioning and color,
 # but it does not include any functionality
@@ -296,3 +304,4 @@ class Button:
             self.activated = True
             return self.activated
         return False
+

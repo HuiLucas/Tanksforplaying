@@ -281,7 +281,11 @@ while running:
             angle_visualizer.fill(RED)
             angle_visualizer = pg.transform.rotate(angle_visualizer, -angle3 * 180 / np.pi)
             screen.blit(angle_visualizer, bullets[-1].pos)
-            print(angle3)
+            #print(angle3)
+        surfaceeht = pg.Surface((10, 10))
+        surfaceeht.fill(RED)
+        screen.blit(surfaceeht, bullets[-1].predicted_landing_spot(planet))
+        #print(len(bullets))
 
     pg.display.flip()
     clock.tick(framerate)
