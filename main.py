@@ -286,7 +286,7 @@ while running:
             screen.blit(angle_visualizer, bullets[-1].pos)
             #print(angle3)
         surfaceeht = pg.Surface((10, 10))
-        surfaceeht.fill(RED)
+        surfaceeht.fill(GREEN)
         screen.blit(surfaceeht, bullets[-1].predicted_landing_spot(planet))
         #print(len(bullets))
 

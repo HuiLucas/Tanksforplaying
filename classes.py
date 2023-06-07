@@ -200,7 +200,7 @@ class Tank:
                         Virtualbullet = Bullet((self.x, self.y), (15, 5), direction * bullet_speed + self.vel, (0, 255, 0),
                                    pg.time.get_ticks())
                         deviation = (pg.math.Vector2(other_tank.x, other_tank.y) - Virtualbullet.predicted_landing_spot(planet4))[0]
-                        print(deviation)
+                        #print(deviation)
                         bullet_speed -= 0.05 * deviation
                     Bulletlist2.append(
                         Bullet((self.x, self.y), (15, 5), direction * bullet_speed + self.vel, (0, 255, 0),
@@ -282,7 +282,7 @@ class Bullet:
         # the bullet is armed after a few milliseconds after being launched.
         if self.armed:
             # if it hits the other tank
-            if pg.math.Vector2((other_tank.x, other_tank.y) - self.pos).length() <= 25:
+            if pg.math.Vector2((other_tank.x, other_tank.y) - self.pos).length() <= 15:
                 self.boom()
                 other_tank.ishit = True
                 self.underground = True
