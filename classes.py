@@ -193,13 +193,27 @@ class Tank:
 
                     # this is the target for the bullet:
                     goal = pg.math.Vector2(other_tank.x, other_tank.y) - pg.math.Vector2(self.x, self.y)
-                    #come up with an initial guess for the bullet direction
+                    # come up with an initial guess for the bullet direction
                     if goal[0] < 0:
                         direction = pg.math.Vector2(-300, -300)
                     else:
                         direction = pg.math.Vector2(300, -300)
-                    bullet_speed = 13.4 * np.sqrt(-9.81 * (goal[0]) ** 2 / (goal[1] - goal[0] * np.sign(goal[0]))) - \
-                                   goal[1] * 1.2 - 3000 * 1 / goal[0]
+                    if not goal[0] == 0:
+                        if (goal[1] - goal[0] * np.sign(goal[0])) == 0:
+                            bullet_speed = 13.4 * np.sqrt(-9.81 * (goal[0]) ** 2 / (goal[1] - goal[0] * np.sign(goal[0]) + 0.01)) - \
+                                       goal[1] * 1.2 - 3000 * 1 / goal[0]
+                        else:
+                            bullet_speed = 13.4 * np.sqrt(
+                                -9.81 * (goal[0]) ** 2 / (goal[1] - goal[0] * np.sign(goal[0]))) - \
+                                           goal[1] * 1.2 - 3000 * 1 / goal[0]
+                    else:
+                        if (goal[1] - goal[0] * np.sign(goal[0])) == 0:
+                            bullet_speed = 13.4 * np.sqrt(-9.81 * (goal[0]) ** 2 / (goal[1] - goal[0] * np.sign(goal[0]) + 0.01)) - \
+                                           goal[1] * 1.2
+                        else:
+                            bullet_speed = 13.4 * np.sqrt(
+                                -9.81 * (goal[0]) ** 2 / (goal[1] - goal[0] * np.sign(goal[0]))) - \
+                                           goal[1] * 1.2
                     direction = direction.normalize()
                     # use a negative feedback loop to change the bullet speed, such that it hits the target:
                     deviation = 11
