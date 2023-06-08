@@ -200,14 +200,20 @@ class Tank:
                                    goal[1] * 1.2 - 3000 * 1 / goal[0]
                     direction = direction.normalize()
                     deviation = 11
-                    while np.abs(deviation) > 10:
+                    i = 0
+                    while np.abs(deviation) > 10 and i <= 100:
                         Virtualbullet = Bullet((self.x, self.y), (15, 5), direction * bullet_speed + self.vel, (0, 255, 0),
                                    pg.time.get_ticks())
                         deviation = (pg.math.Vector2(other_tank.x, other_tank.y) - Virtualbullet.predicted_landing_spot(planet4))[0]
-                        bullet_speed -= 0.05 * deviation
+                        #deviation2 =(pg.math.Vector2(other_tank.x, other_tank.y) - Virtualbullet.predicted_landing_spot(planet4))[1]
+                        #bullet_speed += 0.05 * deviation2
+                        bullet_speed += 0.05 * deviation
+                        i += 1
+                    #print(deviation, other_tank.x, other_tank.y, Virtualbullet.predicted_landing_spot(planet4), deviation2)
                     Bulletlist2.append(
                         Bullet((self.x, self.y), (15, 5), direction * bullet_speed + self.vel, (0, 255, 0),
                                pg.time.get_ticks()))
+                    Bulletlist2[-1].Tank = other_tank
 
 
             else:
@@ -333,6 +339,7 @@ class Button:
         self.text = text
         self.textcolor = textcolor
         self.activated = False
+        self.Tank = None
 
         self.pos = self.center - self.size / 2
         self.rect = pg.Rect(self.pos, self.size)
