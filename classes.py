@@ -8,10 +8,11 @@ import numba
 # constants for the classes
 agility_multiplier = 1e-1
 movement_dampening = 1.2
-dt = 1/60  # time step
-gravity = 9.80665e9 #1e10  # gravity for the bullets. IDK why it has to be so absurdly high (real life G is ~10^-11)
+dt = 1 / 60  # time step
+gravity = 9.80665e9  # 1e10  # gravity for the bullets. IDK why it has to be so absurdly high (real life G is ~10^-11)
 immunity_time = 500
-Tanklist =[]
+Tanklist = []
+
 
 # planet class is pretty bare-bones, but it helps a lot with organization
 class Planet:
@@ -29,7 +30,7 @@ class Tank:
         self.angvel = 0
         self.size = size
         self.agility = agility
-        self.AI = AI # stores whether the tank is ai
+        self.AI = AI  # stores whether the tank is ai
         self.barrel_angle = 0
         self.color = color
         self.invisible_mode = False
@@ -148,8 +149,7 @@ class Tank:
             elif hit_time < 4 * immunity_time / 4:
                 self.surface.set_alpha(255)
 
-
-    def AI_move(self, Bulletlist2, planet4):
+    def AI_move(self, Bulletlist2, planet4, current_time=1e10):
         # only if the tank is AI:
         if self.AI == True:
             # only consider bullets that are still in the air
@@ -160,24 +160,24 @@ class Tank:
             # if there is one bullet in the air, evade that one
             if len(Bulletlist) == 1:
                 # if the bullet is aimed at the tank, evade it
-                predpos = Bulletlist[-1].predicted_landing_spot(planet4) # calculate landing spot of bullet
-                if np.abs(predpos[0] - self.x) < 100: # if bullet lands close to tank, move
+                predpos = Bulletlist[-1].predicted_landing_spot(planet4)  # calculate landing spot of bullet
+                if np.abs(predpos[0] - self.x) < 100:  # if bullet lands close to tank, move
                     if predpos[0] < self.x:
-                        self.move(1)
-                        self.wantstoshootnow = True # After moving, the tank may shoot
+                        self.move(1, current_time)
+                        self.wantstoshootnow = True  # After moving, the tank may shoot
 
                     else:
-                        self.move(-1)
+                        self.move(-1, current_time)
                         self.wantstoshootnow = True
             # Do the same for the second Bullet in the air if there is one
             elif len(Bulletlist) >= 2:
                 predpos = Bulletlist[-2].predicted_landing_spot(planet4)
                 if np.abs(predpos[0] - self.x) < 100:
                     if predpos[0] < self.x:
-                        self.move(1)
+                        self.move(1, current_time)
                         self.wantstoshootnow = True
                     else:
-                        self.move(-1)
+                        self.move(-1, current_time)
                         self.wantstoshootnow = True
             # AI tank shoots using the following code
             if self.wantstoshootnow == True:
@@ -204,14 +204,14 @@ class Tank:
                     i = 0
                     direction_of_shooting = -np.sign(self.x - other_tank.x)
                     while np.abs(deviation) > 10 and i <= 100:
-                        Virtualbullet = Bullet((self.x, self.y), (15, 5), direction * bullet_speed + self.vel, (0, 255, 0),
-                                   pg.time.get_ticks())
+                        Virtualbullet = Bullet((self.x, self.y), (15, 5), direction * bullet_speed + self.vel, \
+                                               (0, 255, 0), pg.time.get_ticks())
                         deviation = (pg.math.Vector2(other_tank.x, other_tank.y) - Virtualbullet.predicted_landing_spot(planet4))[0]
                         #deviation2 =(pg.math.Vector2(other_tank.x, other_tank.y) - Virtualbullet.predicted_landing_spot(planet4))[1]
                         #bullet_speed += 0.05 * deviation2
                         bullet_speed += 0.05 * deviation * direction_of_shooting
                         i += 1
-                    #print(deviation, other_tank.x, other_tank.y, Virtualbullet.predicted_landing_spot(planet4), deviation2)
+                    # print(deviation, other_tank.x, other_tank.y, Virtualbullet.predicted_landing_spot(planet4), deviation2)
                     Bulletlist2.append(
                         Bullet((self.x, self.y), (15, 5), direction * bullet_speed + self.vel, (0, 255, 0),
                                pg.time.get_ticks()))
@@ -220,7 +220,7 @@ class Tank:
 
             else:
                 # move in the best direction
-                self.move(0)
+                self.move(0, current_time)
 
     def get_surf(self, planet_pos, planet_radius):
         # find the tank's x, y coordinates in terms of its angle and stuff
@@ -324,11 +324,9 @@ class Bullet:
         while rel_dist2.magnitude() > planet.radius:
             rel_dist2 = pg.math.Vector2(planet.pos - pos)
             acceleration = gravity * rel_dist2 / rel_dist2.magnitude() ** 3
-            vel += acceleration * 1/60
-            pos += vel * 1/60
+            vel += acceleration * 1 / 60
+            pos += vel * 1 / 60
         return pos
-
-
 
 
 # button class includes a bunch of stuff for positioning and color,
@@ -354,4 +352,3 @@ class Button:
             self.activated = True
             return self.activated
         return False
-

@@ -203,18 +203,18 @@ while running:
         tank.move(0, pg.time.get_ticks())
 
     # move AI Tank
-    #for tanks3 in custom.Tanklist:
-    #    if tanks3.AI == True:
-    #        tanks3.AI_move(bullets, planet)
-    AI_tank.AI_move(bullets, planet)
-    AI_tank2.AI_move(bullets, planet)
+    for tanks3 in custom.Tanklist:
+        if tanks3.AI == True:
+           tanks3.AI_move(bullets, planet)
+    #AI_tank.AI_move(bullets, planet)
+    #AI_tank2.AI_move(bullets, planet)
 
     if dev_mode:
         screen.blit(font1.render("wheh", False, WHITE), (AI_tank.predictposition, 200))
 
     # text with misc content for debugging
-    screen.blit(font1.render(str(AI_tank.surface.get_alpha()), False, WHITE), (200, 200))
-    screen.blit(font1.render(str(AI_tank.health), False, WHITE), (500, 200))
+    screen.blit(font1.render(str(AI_tank.health), False, WHITE), (200, 200))
+    screen.blit(font1.render(str(AI_tank.ishit), False, WHITE), (500, 200))
     if pg.time.get_ticks() - tank.cooloff_timer >= tank.cool_off_time:
         screen.blit(font1.render(str(pg.time.get_ticks() - tank.cooloff_timer), False, GREEN), (200, 250))
     else:
