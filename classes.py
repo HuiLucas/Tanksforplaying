@@ -190,6 +190,7 @@ class Tank:
                     list_of_other_tanks.pop(self.index_in_Tanklist)
                     randindex = random.randint(0, len(list_of_other_tanks) - 1)
                     other_tank = list_of_other_tanks[randindex]
+
                     # this is the target for the bullet
                     goal = pg.math.Vector2(other_tank.x, other_tank.y) - pg.math.Vector2(self.x, self.y)
                     if goal[0] < 0:
@@ -201,13 +202,14 @@ class Tank:
                     direction = direction.normalize()
                     deviation = 11
                     i = 0
+                    direction_of_shooting = -np.sign(self.x - other_tank.x)
                     while np.abs(deviation) > 10 and i <= 100:
                         Virtualbullet = Bullet((self.x, self.y), (15, 5), direction * bullet_speed + self.vel, (0, 255, 0),
                                    pg.time.get_ticks())
                         deviation = (pg.math.Vector2(other_tank.x, other_tank.y) - Virtualbullet.predicted_landing_spot(planet4))[0]
                         #deviation2 =(pg.math.Vector2(other_tank.x, other_tank.y) - Virtualbullet.predicted_landing_spot(planet4))[1]
                         #bullet_speed += 0.05 * deviation2
-                        bullet_speed += 0.05 * deviation
+                        bullet_speed += 0.05 * deviation * direction_of_shooting
                         i += 1
                     #print(deviation, other_tank.x, other_tank.y, Virtualbullet.predicted_landing_spot(planet4), deviation2)
                     Bulletlist2.append(

@@ -68,8 +68,10 @@ tank.cool_off_time = cool_off_time
 # AI tank
 AI_tank = custom.Tank(-np.pi / 2 + 0.1, (20, 30), 8, WHITE, boundary_angle, True)
 AI_tank2 = custom.Tank(-np.pi / 2 -0.1, (20, 30), 8, GREEN, boundary_angle, True)
-AI_tank.cool_off_time = cool_off_time
-AI_tank2.cool_off_time = cool_off_time
+for tanks1 in custom.Tanklist:
+    if tanks1.AI == True:
+        tanks1.cool_off_time = cool_off_time
+
 
 # create the crosshair
 crosshair = custom.Crosshairs((0, 0), (50, 50))
@@ -79,8 +81,10 @@ bullets = []
 
 # start the cool-off timer
 tank.cooloff_timer = pg.time.get_ticks()
-AI_tank.cooloff_timer = pg.time.get_ticks() + 2000
-AI_tank2.cooloff_timer = pg.time.get_ticks() + 2000
+for Tanks2 in custom.Tanklist:
+    if Tanks2.AI == True:
+        Tanks2.cooloff_timer = pg.time.get_ticks() + 2000
+
 
 
 menu_running = True # is the menu screen running
@@ -199,9 +203,12 @@ while running:
         tank.move(0, pg.time.get_ticks())
 
     # move AI Tank
-
+    #for tanks3 in custom.Tanklist:
+    #    if tanks3.AI == True:
+    #        tanks3.AI_move(bullets, planet)
     AI_tank.AI_move(bullets, planet)
     AI_tank2.AI_move(bullets, planet)
+
     if dev_mode:
         screen.blit(font1.render("wheh", False, WHITE), (AI_tank.predictposition, 200))
 
@@ -228,8 +235,10 @@ while running:
     # displaying the tanks. this needs quite a bit of stuff, so it has to be like this, afaik.
     # AI_tank.invisible_mode = True
     tank.display(planet, screen)
-    AI_tank.display(planet, screen)
-    AI_tank2.display(planet, screen)
+    for tanks4 in custom.Tanklist:
+        if tanks4.AI == True:
+            tanks4.display(planet, screen)
+
 
     # deal with bullets
     for bullet in bullets:
