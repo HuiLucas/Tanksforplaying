@@ -62,12 +62,16 @@ else:
     boundary_angle = -10  # -10 is an impossible value, so it's recognizable
 
 # create the tanks
-tank = custom.Tank(-np.pi / 2, (20, 30), 8, RED, boundary_angle, False)
+tank = custom.Tank(-np.pi / 2 - 0.2, (20, 30), 8, RED, boundary_angle, False)
 tank.cool_off_time = cool_off_time
 
-# AI tank
+# AI tanks
 AI_tank = custom.Tank(-np.pi / 2 + 0.1, (20, 30), 8, WHITE, boundary_angle, True)
-AI_tank2 = custom.Tank(-np.pi / 2 -0.1, (20, 30), 8, GREEN, boundary_angle, True)
+AI_tank2 = custom.Tank(-np.pi / 2 +0.3, (20, 30), 8, GREEN, boundary_angle, True)
+AI_tank3 = custom.Tank(-np.pi / 2, (20, 30), 8, GREEN, boundary_angle, True)
+AI_tank4 = custom.Tank(-np.pi / 2 +0.2, (20, 30), 8, GREEN, boundary_angle, True)
+
+# provide the AI tanks with the cool_off_time
 for tanks1 in custom.Tanklist:
     if tanks1.AI == True:
         tanks1.cool_off_time = cool_off_time
@@ -202,13 +206,12 @@ while running:
     else:
         tank.move(0, pg.time.get_ticks())
 
-    # move AI Tank
+    # move AI Tanks
     for tanks3 in custom.Tanklist:
         if tanks3.AI == True:
            tanks3.AI_move(bullets, planet)
-    #AI_tank.AI_move(bullets, planet)
-    #AI_tank2.AI_move(bullets, planet)
 
+    # If development mode is on, use an indicator to know where the bullet is predicted to hit
     if dev_mode:
         screen.blit(font1.render("wheh", False, WHITE), (AI_tank.predictposition, 200))
 
@@ -221,7 +224,7 @@ while running:
         screen.blit(font1.render(str(pg.time.get_ticks() - tank.cooloff_timer), False, RED), (200, 250))
     screen.blit(font2.render("Artwork by Stable Diffusion and DALL-E", False, MARS_RED), (0, 0))
 
-    # display the planet
+    # display the planet, which consist of a transparent atmosphere, and some shadow circles in front
     background_planet = pg.Surface((display_width, display_height), pg.SRCALPHA)
     pg.draw.circle(background_planet, (150, 100, 100, 30), planet.pos, planet.radius + 60)
     pg.draw.circle(background_planet, (150, 100, 100, 50), planet.pos, planet.radius + 45)
@@ -232,8 +235,7 @@ while running:
     pg.draw.circle(screen, (180, 130, 130), planet.pos, planet.radius - 7)
     pg.draw.circle(screen, planet.color, planet.pos, planet.radius - 18)
 
-    # displaying the tanks. this needs quite a bit of stuff, so it has to be like this, afaik.
-    # AI_tank.invisible_mode = True
+    # displaying the tanks.
     tank.display(planet, screen)
     for tanks4 in custom.Tanklist:
         if tanks4.AI == True:
@@ -256,8 +258,7 @@ while running:
                 bullet.armed = False
                 bullet.surface.set_alpha(100)
             else:
-                # lucas i really need some more comments
-                # if the bullet is still flying, alles goed
+                # Make the bullet appear when it is armed and not under the ground
                 bullet.armed = True
                 if not bullet.underground:
                     bullet.surface.set_alpha(255)
@@ -280,7 +281,7 @@ while running:
     crosshair.pos = pg.mouse.get_pos()
     screen.blit(crosshair.surface, crosshair.surface.get_rect(center=crosshair.pos))
 
-    # make hits visible without killing any of the tanks
+    # make hits visible without killing any of the tanks, by changing the color of the barrel
     if dev_mode == True:
         if AI_tank.ishit == True:
             AI_tank.color = (random.randint(0,255), random.randint(0, 255), random.randint(0, 255))
@@ -289,7 +290,7 @@ while running:
         AI_tank.ishit = False
         tank.ishit = False
 
-    # some stuff to visualize variables to debug them
+    # some stuff to visualize variables to debug them, this is not important and can be removed later
     if dev_mode and not len(bullets) == 0:
         AI_tank.cooloff_timer = pg.time.get_ticks()
         if bullets[-1].angle > 0:

@@ -11,7 +11,7 @@ movement_dampening = 1.2
 dt = 1 / 60  # time step
 gravity = 9.80665e9  # 1e10  # gravity for the bullets. IDK why it has to be so absurdly high (real life G is ~10^-11)
 immunity_time = 500
-Tanklist = []
+Tanklist = [] # list of the tanks
 
 
 # planet class is pretty bare-bones, but it helps a lot with organization
@@ -36,8 +36,8 @@ class Tank:
         self.invisible_mode = False
         self.cool_off_time = 0
         self.cooloff_timer = 0
-        self.ishit = False
-        self.predictposition = 0
+        self.ishit = False # stores whether it is hit
+        self.predictposition = 0 # stores the predicted location of its bullet
         self.index_in_Tanklist = len(Tanklist)
         Tanklist.append(self)
 
@@ -157,9 +157,8 @@ class Tank:
             for bullet in Bulletlist2:
                 if bullet.underground == False:
                     Bulletlist.append(bullet)
-            # if there is one bullet in the air, evade that one
+            # if there is one bullet in the air, evade that one:
             if len(Bulletlist) == 1:
-                # if the bullet is aimed at the tank, evade it
                 predpos = Bulletlist[-1].predicted_landing_spot(planet4)  # calculate landing spot of bullet
                 if np.abs(predpos[0] - self.x) < 100:  # if bullet lands close to tank, move
                     if predpos[0] < self.x:
@@ -181,9 +180,10 @@ class Tank:
                         self.wantstoshootnow = True
             # AI tank shoots using the following code
             if self.wantstoshootnow == True:
-                # It shoots only if the timer allows it
+                # It shoots only if the timer allows it:
                 if pg.time.get_ticks() - self.cooloff_timer > self.cool_off_time:
                     self.cooloff_timer = pg.time.get_ticks()
+                    # create a list of the other tanks, and select one of them as a target
                     list_of_other_tanks = []
                     for Tankthing in Tanklist:
                         list_of_other_tanks.append(Tankthing)
@@ -191,8 +191,9 @@ class Tank:
                     randindex = random.randint(0, len(list_of_other_tanks) - 1)
                     other_tank = list_of_other_tanks[randindex]
 
-                    # this is the target for the bullet
+                    # this is the target for the bullet:
                     goal = pg.math.Vector2(other_tank.x, other_tank.y) - pg.math.Vector2(self.x, self.y)
+                    #come up with an initial guess for the bullet direction
                     if goal[0] < 0:
                         direction = pg.math.Vector2(-300, -300)
                     else:
@@ -200,26 +201,30 @@ class Tank:
                     bullet_speed = 13.4 * np.sqrt(-9.81 * (goal[0]) ** 2 / (goal[1] - goal[0] * np.sign(goal[0]))) - \
                                    goal[1] * 1.2 - 3000 * 1 / goal[0]
                     direction = direction.normalize()
+                    # use a negative feedback loop to change the bullet speed, such that it hits the target:
                     deviation = 11
                     i = 0
                     direction_of_shooting = -np.sign(self.x - other_tank.x)
                     while np.abs(deviation) > 10 and i <= 100:
+                        # simulate the bullet and find out where it lands:
                         Virtualbullet = Bullet((self.x, self.y), (15, 5), direction * bullet_speed + self.vel, \
                                                (0, 255, 0), pg.time.get_ticks())
                         deviation = (pg.math.Vector2(other_tank.x, other_tank.y) - Virtualbullet.predicted_landing_spot(planet4))[0]
                         #deviation2 =(pg.math.Vector2(other_tank.x, other_tank.y) - Virtualbullet.predicted_landing_spot(planet4))[1]
                         #bullet_speed += 0.05 * deviation2
+                        # change the bullet speed to reduce the deviation. The direction of shooting is there to use
+                        # the right sign, depending on what direction it shoots.
                         bullet_speed += 0.05 * deviation * direction_of_shooting
                         i += 1
                     # print(deviation, other_tank.x, other_tank.y, Virtualbullet.predicted_landing_spot(planet4), deviation2)
+                    # Launch the bullet with the given bullet_speed and direction
                     Bulletlist2.append(
                         Bullet((self.x, self.y), (15, 5), direction * bullet_speed + self.vel, (0, 255, 0),
                                pg.time.get_ticks()))
+                    # Designate the target tank as a property of the bullet
                     Bulletlist2[-1].Tank = other_tank
-
-
             else:
-                # move in the best direction
+                # if not shooting nor moving, do nothing
                 self.move(0, current_time)
 
     def get_surf(self, planet_pos, planet_radius):
@@ -259,7 +264,8 @@ class Bullet:
         self.angle = np.arctan2(self.vel[1], self.vel[0])
         self.acceleration = pg.math.Vector2([0, 0])
         self.firetime = firetime
-        self.armed = False
+        self.armed = False # to make sure that the bullet does not explode directly after launching, it starts off as
+        # not armed
         self.underground = False
 
 
@@ -292,7 +298,7 @@ class Bullet:
         # shooting tank, otherwise it would just explode directly after shooting, destroying the shooting tank. Instead,
         # the bullet is armed after a few milliseconds after being launched.
         if self.armed:
-            # if it hits a tank
+            # check for every tank whether it hits it:
             if not len(Tanklist) == 0:
                 for tankk in Tanklist:
                     if pg.math.Vector2((tankk.x, tankk.y) - self.pos).length() <= 25:
@@ -310,23 +316,26 @@ class Bullet:
         self.surface.set_colorkey((50, 50, 50))
         self.surface.fill((255, 0, 0))
 
+        # use image as explosion
         boom_image = pg.image.load("Artwork/boom.png")
         boom_image.convert()
         self.surface.blit(boom_image, (-25, -30))
 
     def predicted_landing_spot(self, planet):
+        # inititate the initial landing position and velocity. Bit of a workaround with the [0,0] lists, because we cannot use deepcopy
         pos = [0, 0]
         vel = [0, 0]
         pos += self.pos
         vel += self.vel
         time = 0
         rel_dist2 = pg.math.Vector2(planet.pos - pos)
+        # as long as the bullet is in the air, simulate the trajectory
         while rel_dist2.magnitude() > planet.radius:
             rel_dist2 = pg.math.Vector2(planet.pos - pos)
             acceleration = gravity * rel_dist2 / rel_dist2.magnitude() ** 3
             vel += acceleration * 1 / 60
             pos += vel * 1 / 60
-        return pos
+        return pos # return the landing spot
 
 
 # button class includes a bunch of stuff for positioning and color,
