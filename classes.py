@@ -13,6 +13,7 @@ gravity = 9.80665e9  # 1e10  # gravity for the bullets. IDK why it has to be so 
 immunity_time = 500
 Tank_list = []  # list of the tanks
 health_bar_size = [60, 5]
+Difficulty = 0
 
 pgvec = pg.math.Vector2
 
@@ -264,6 +265,9 @@ class Tank:
                         bullet_speed += 0.05 * deviation * direction_of_shooting
                         i += 1
                     # print(deviation, other_tank.x, other_tank.y, Virtualbullet.predicted_landing_spot(planet4), deviation2)
+                    # If difficulty is set to easy, then add a deviation to the AI target:
+                    if Difficulty == 1:
+                        bullet_speed += 50 * np.random.normal(0, 1.0)
                     # Launch the bullet with the given bullet_speed and direction
                     Bulletlist2.append(
                         Bullet((self.x, self.y), (15, 5), direction * bullet_speed + self.vel, (0, 255, 0),

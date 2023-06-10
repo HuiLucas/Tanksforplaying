@@ -67,6 +67,7 @@ menu_running = True # is the menu screen running
 dev_mode = False
 
 # buttons
+easy_play_button = custom.Button([display_width/2 - 400, display_height/4], [300, 100], WHITE, "Beginner Mode", BLACK, font1)
 play_button = custom.Button([display_width/2, display_height/4], [300, 100], WHITE, "Play", BLACK, font1)
 controls_button = custom.Button([display_width/2, display_height/4*2], [300, 100], WHITE, "How to play", BLACK, font1)
 exit_button = custom.Button([display_width/2, display_height/4*3], [300, 100], WHITE, "Exit", BLACK, font1)
@@ -108,6 +109,9 @@ while menu_running:
     screen.blit(howtoplayimage, howtoplayimage.get_rect(center=(display_width / 2, display_height / 2)))
 
     # display buttons
+    # easy mode button
+    pg.draw.rect(screen, easy_play_button.color, easy_play_button.rect)
+    screen.blit(easy_play_button.text_surf, easy_play_button.text_rect)
     # play button
     pg.draw.rect(screen, play_button.color, play_button.rect)
     screen.blit(play_button.text_surf, play_button.text_rect)
@@ -126,6 +130,13 @@ while menu_running:
         # buttons
         mouse_pos = pg.mouse.get_pos()
         # print("AAAAAAAAAAA")
+
+        # check if mouse click is in play button
+        if easy_play_button.is_clicked(mouse_pos) and (not show_how_to_play) and pg.time.get_ticks() - howtoplay_timer > 500:
+            menu_running = False
+            running = True
+            custom.Difficulty = 1
+            break
 
         # check if mouse click is in play button
         if play_button.is_clicked(mouse_pos) and (not show_how_to_play) and pg.time.get_ticks() - howtoplay_timer > 500:
