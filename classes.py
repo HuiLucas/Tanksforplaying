@@ -153,7 +153,7 @@ class Tank:
         # if the tank is hit, decrease its health
         hit_time = current_time - self.last_hit_time
         if self.is_hit and hit_time > immunity_time and self.health > 0:
-            print(f"is hit, health now {self.health}")
+            # print(f"is hit, health now {self.health}")
             # 0.5 because the bullet hits twice for some reason,
             # i'm too lazy to fix it now
             self.health -= 0.5
